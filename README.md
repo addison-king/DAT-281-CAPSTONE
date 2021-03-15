@@ -1,6 +1,6 @@
 # DAT-281-CAPSTONE
 ## Project Goal
-Work with a local nonprofit (Urban Impact Foundation, "UIF") to develop a tool that increases productivity and ease of access to their alumni, and visualizes performance metrics for internal review and donor display.
+Work with a local nonprofit (Urban Impact Foundation, "UIF") to develop a tool that increases productivity and ease of access to their alumni data, and visualizes performance metrics for internal review and donor display.
 ## Timeline
 ![BG Timeline](https://raw.githubusercontent.com/brandyn-gilbert/DAT-281-CAPSTONE/77ac657437b5e9980fcfb550ee4a2820f2f74dfe/Timeline/timeline.svg)
 ## Key Milestones
