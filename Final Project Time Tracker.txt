@@ -1,0 +1,36 @@
+Final Project Tracking
+	Create a db (1 hour)
+		Create tables
+		set wd()
+
+	Import .csv (1.5 hour)
+		Setup Excel template to import new alumni
+		Create unique ID
+		
+unique_ID
+last_name
+first_name
+CORE_student
+graduation_year
+phone_num
+birthday
+gender
+address
+city
+state
+zipcode
+email
+church
+highschool
+college
+job
+health_info
+parent_guardian
+parent_guardian_phone_num
+parent_guardian_email
+emergency_contact
+emergency_contact_phone_number
+OPTIONS
+education
+athletics
+performing_arts
