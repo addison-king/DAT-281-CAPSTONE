@@ -14,17 +14,35 @@ import uuid
 def main():
     _set_dir()
     _create_db_table()
-    ask = input()
-    if(ask=='y'):
+    mm_choice = _menu_main()
+    if(mm_choice == '1'):
         _import_alumni()
+    elif(mm_choice == '2'):
+        _export_alumni()
     else:
         print('^.^')
 
+def _menu_main():
+    """
+    Asks the user what they want to do.
+    Returns the selection.
 
+    Returns
+    -------
+    mm_value : str
+        text of what the user wants to do.
+
+    """
+    print('What would you like to do? (pick a number)')
+    print('\t1. Add new alumni.')
+    print('\t2. Query the database.')
+    mm_value = input('Selection: ')
+    return mm_value
 
 def _import_alumni():
     """
-    
+    Reads in .csv with new alumni data. Adds UUID to each new person. Writes
+        to the database. Closes the db connection.
 
     Returns
     -------
@@ -44,7 +62,68 @@ def _import_alumni():
     connection.commit()
     connection.close()
     
+def _export_alumni():
+    
+    export_last_name = input('Please enter the last name of the alumni: ')
+    export_first_name = input('Please enter the first name of the alumni: ')
+    connection = _db_connection()
+    c = connection.cursor()
+    c.execute(''' SELECT first_name, last_name
+                  FROM Basic_Info
+                  WHERE last_name=? AND first_name=?''',
+                  (export_last_name, export_first_name))
+    check = c.fetchone()
 
+    if not check is None:
+        choice = input('Please choose a number: \n'
+                       '\t1. Return an Alumni\'s contact info \n'
+                       '\t2. Return an Alumni\'s call logs \n'
+                       '\t3. Some third option \n'
+                       'Selection: ')
+        if choice == '1':
+            print('\n\nContact Info:\n')
+            query = ''' SELECT first_name, last_name, phone_num, 
+                       graduation_year, highschool
+                           FROM Basic_Info
+                           WHERE last_name= :last AND first_name= :first                      
+                       '''
+            df = pd.read_sql(query, params={'last': export_last_name,
+                                            'first': export_first_name},
+                             con=connection)
+            print(df)
+
+            connection.close()
+        elif choice == '2':
+            print('\n\nCall logs:\n')
+            query = ''' SELECT first_name, last_name, contact_date, status, 
+                            need, notes
+                        FROM Basic_Info
+                        INNER JOIN Contact_Events on 
+                            Contact_Events.unique_ID = Basic_Info.unique_ID
+                        WHERE last_name= :last AND first_name= :first 
+                        ORDER BY contact_date desc
+                    '''
+            df = pd.read_sql(query, params={'last': export_last_name,
+                                            'first': export_first_name},
+                             con=connection)
+            print(df)
+            file_name = export_last_name + '.' + export_first_name + '.csv'
+            df.to_csv(file_name, index=False, encoding='utf-8')
+            print('Exported selected data to:', file_name)
+            connection.close()
+        elif choice == '3':
+            print('\n\nAll info:\n')
+            print('To be developed later...')
+            connection.close()
+        else:
+            print('\n\n(._.)')
+            connection.close()
+        
+    else:
+        print('bad')
+        connection.close()
+    
+    
 
 def _set_dir():
     """
@@ -80,14 +159,6 @@ def _set_dir():
 
         
 def _create_db_table():
-    '''
-    Creates the tables if it doesn't exist.
-
-    Returns
-    -------
-    None.
-
-    '''
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
                         unique_ID text,
                         last_name text,
