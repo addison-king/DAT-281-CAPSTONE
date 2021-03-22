@@ -7,30 +7,19 @@ Final Project Tracking
 		Setup Excel template to import new alumni
 		Create unique ID
 		
-unique_ID
-last_name
-first_name
-CORE_student
-graduation_year
-phone_num
-birthday
-gender
-address
-city
-state
-zipcode
-email
-church
-highschool
-college
-job
-health_info
-parent_guardian
-parent_guardian_phone_num
-parent_guardian_email
-emergency_contact
-emergency_contact_phone_number
-OPTIONS
-education
-athletics
-performing_arts
+	Export .csv (2 hours)
+		Export an alumni's basic info
+		Export an alumni's contact log
+	
+	More Exporting
+		Open ended query?
+		Export based on graduation year
+		
+	Edit Alumni basic info
+	
+	Created MOCK data (1 hour)
+		mockaroo.com
+		
+		
+
+		

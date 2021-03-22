@@ -18,7 +18,11 @@ def main():
     if(mm_choice == '1'):
         _import_alumni()
     elif(mm_choice == '2'):
+        _import_new_interaction()
+    elif(mm_choice == '3'):
         _export_alumni()
+    elif(mm_choice == '4'):
+        _edit_alumni()
     else:
         print('^.^')
 
@@ -35,9 +39,32 @@ def _menu_main():
     """
     print('What would you like to do? (pick a number)')
     print('\t1. Add new alumni.')
-    print('\t2. Query the database.')
+    print('\t2. Add new alumni interaction/call.')
+    print('\t3. Query the database.')
+    print('\t4. Edit values for existing alumni.')
+    
     mm_value = input('Selection: ')
     return mm_value
+
+def _import_new_interaction():
+    print('Goal: import .csv file containing new interaction')
+    print('Goal: first retrieve UUID, append to interaction df')
+    print('Goal: second write the df to the database')
+
+def _edit_alumni():
+# =============================================================================
+#     f_name = input('Enter the first name of the alumni: ')
+#     l_name = input('Enter the last name of the alumni: ')
+#     g_date = input('Enter the graduation year of the alumni: ')
+#     
+#     connection = _db_connection()
+#     c = connection.cursor()
+#     
+#     connection.close()
+# =============================================================================
+    
+    
+    print('To be finished later..')
 
 def _import_alumni():
     """
@@ -50,7 +77,7 @@ def _import_alumni():
 
     """
     
-    alum_import = pd.read_csv('ImportTemplate.csv')
+    alum_import = pd.read_csv('MOCK_Basic_Info.csv')
     for i in alum_import.index:
         alum_import.at[i,'unique_ID'] = uuid.uuid4()
         alum_import.at[i,'unique_ID'] = str(alum_import.at[i,'unique_ID'])
@@ -63,6 +90,16 @@ def _import_alumni():
     connection.close()
     
 def _export_alumni():
+    """
+    Asks the user to input a last name and a first name.
+    Looks up the combination, then asks the user what info they want.
+    Exports a .csv file containing the data.
+
+    Returns
+    -------
+    None.
+
+    """
     
     export_last_name = input('Please enter the last name of the alumni: ')
     export_first_name = input('Please enter the first name of the alumni: ')
@@ -123,8 +160,6 @@ def _export_alumni():
         print('bad')
         connection.close()
     
-    
-
 def _set_dir():
     """
     Sets the working directory to the github folder.
@@ -136,27 +171,26 @@ def _set_dir():
 
     """
     cwd = os.getcwd()
-    if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\UIF_Data' or
-           cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\UIF_Data'):
+    if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data' or
+           cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data'):
         while True:
             local_machine = input('Laptop or Desktop?').upper()
-            if not (local_machine == 'LAPTOP' or local_machine == 'DESKTOP'):
+            if not (local_machine == 'LAPTOP' or local_machine == 'DESKTOP' 
+                    or local_machine == 'L' or local_machine == 'D'):
                 print('please enter only either: laptop or desktop')
                 continue
             else:
                 break
             
-        if(local_machine == 'LAPTOP'):
-            os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\UIF_Data')
+        if(local_machine == 'LAPTOP' or local_machine == 'L'):
+            os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
             print('wd is now:', os.getcwd())
         else:
-            os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\UIF_Data')
+            os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
             print(os.getcwd())
             print('wd is now:', os.getcwd())
     else:
         print('wd already set:', os.getcwd())
-
-
         
 def _create_db_table():
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
@@ -212,7 +246,7 @@ def _db_connection():
         
     '''
     try:
-        connection = sqlite3.connect('UIF_Alumni.db')
+        connection = sqlite3.connect('MOCK_Data.db')
     except Error:
         print(Error)
     return connection
