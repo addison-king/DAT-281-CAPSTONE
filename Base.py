@@ -136,8 +136,8 @@ def _set_dir():
 
     """
     cwd = os.getcwd()
-    if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE' or
-           cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE'):
+    if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\UIF_Data' or
+           cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\UIF_Data'):
         while True:
             local_machine = input('Laptop or Desktop?').upper()
             if not (local_machine == 'LAPTOP' or local_machine == 'DESKTOP'):
@@ -147,10 +147,10 @@ def _set_dir():
                 break
             
         if(local_machine == 'LAPTOP'):
-            os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE')
+            os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\UIF_Data')
             print('wd is now:', os.getcwd())
         else:
-            os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE')
+            os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\UIF_Data')
             print(os.getcwd())
             print('wd is now:', os.getcwd())
     else:
