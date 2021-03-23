@@ -50,6 +50,8 @@ def _import_new_interaction():
     print('Goal: import .csv file containing new interaction')
     print('Goal: first retrieve UUID, append to interaction df')
     print('Goal: second write the df to the database')
+    
+    
 
 def _edit_alumni():
 # =============================================================================
@@ -222,17 +224,25 @@ def _create_db_table():
                         athletics text,
                         performing_arts text
                         )'''
-    sql_tables_contact = '''CREATE table IF NOT EXISTS Contact_Events (
+    sql_table_contact = '''CREATE table IF NOT EXISTS Contact_Events (
                         unique_ID integer,
                         contact_date text,
                         status text,
                         need text,
                         notes text               
                         )'''
+    sql_table_ID = '''CREATE table IF NOT EXISTS Alumni_ID (
+                        alumni_ID integer PRIMARY KEY AUTOINCREMENT,
+                        last_name text,
+                        first_name text,
+                        birthday text
+                        )'''
+    
     connection = _db_connection()
     c = connection.cursor()
     c.execute(sql_table_basic)
-    c.execute(sql_tables_contact)
+    c.execute(sql_table_contact)
+    c.execute(sql_table_ID)
     connection.commit()
     connection.close()
 
