@@ -47,9 +47,12 @@ def _menu_main():
     return mm_value
 
 def _import_new_interaction():
-    print('Goal: import .csv file containing new interaction')
-    print('Goal: first retrieve UUID, append to interaction df')
-    print('Goal: second write the df to the database')
+    new_call = pd.read_csv('MOCK_Contact_Event.csv')
+    new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
+    connection = _db_connection()
+    new_call.to_sql('Contact_Events', connection, index=False,
+                    if_exists='append')
+    connection.close()
     
     
 
@@ -70,24 +73,76 @@ def _edit_alumni():
 
 def _import_alumni():
     """
-    Reads in .csv with new alumni data. Adds UUID to each new person. Writes
-        to the database. Closes the db connection.
-
+    Reads in .csv with new alumni data. Checks to make sure the alumni doesn't
+        already exist. Adds all new alumni to database where an ID number is
+        assigned. 
+    Retrieves the new ID number, adds it to the dataframe. Then the dataframe
+        containing all pertinent info is added to the database.
+        
     Returns
     -------
     None.
 
     """
     
-    alum_import = pd.read_csv('MOCK_Basic_Info.csv')
-    for i in alum_import.index:
-        alum_import.at[i,'unique_ID'] = uuid.uuid4()
-        alum_import.at[i,'unique_ID'] = str(alum_import.at[i,'unique_ID'])
-        i = i+1
+    alumni = pd.read_csv('MOCK_Basic_Info.csv')
+    alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
+    query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
+                FROM Alumni_ID
+                WHERE last_name= :last AND first_name= :first AND birthday= :bday
+                GROUP BY last_name
+                '''
+    connection = _db_connection()                
+    for i in alumni.index:
+
+        last_name = alumni.loc[i,'last_name']
+        first_name = alumni.loc[i,'first_name']
+        bday = alumni.loc[i,'birthday']
+        
+        df = pd.read_sql(query_1, params={'last': last_name, 
+                                        'first': first_name,
+                                        'bday': bday},
+                         con=connection)
+        if len(df) == 0:
+            add_alumni = alumni[['last_name','first_name','birthday']].copy()
+        else:
+            print('\'',first_name,' ', last_name, '\' already exists..',
+                  sep='')
+     
+    add_alumni.to_sql('Alumni_ID', connection, index=False,
+                      if_exists='append')
+    connection.commit()        
+    connection.close()
+    
+    
+#import alumni now that IDs have been assigned
+    query_2 = ''' SELECT alumni_ID
+                FROM Alumni_ID
+                WHERE first_name= :first AND 
+                      last_name= :last AND 
+                      birthday= :bday
+                      '''
     connection = _db_connection()
-    alum_import.to_sql('Basic_Info', connection, if_exists='append',
-                       index=False)
+    for i in alumni.index:
+        last_name = alumni.loc[i, 'last_name']
+        first_name = alumni.loc[i, 'first_name']
+        bday = alumni.loc[i, 'birthday']
+        
+        df = pd.read_sql(query_2, params={'last': last_name,
+                                        'first': first_name,
+                                        'bday': bday},
+                         con=connection)
+        if len(df) == 1:
+            alum_num = int(df.loc[0,'alumni_ID'])
+            alumni.at[i, 'alumni_ID'] = alum_num
+
+        else:
+            print('DF error. length of:', len(df))
+    
+    alumni.to_sql('Basic_Info', connection, index=False,
+                  if_exists='append')
+    
     connection.commit()
     connection.close()
     
@@ -196,7 +251,7 @@ def _set_dir():
         
 def _create_db_table():
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
-                        unique_ID text,
+                        alumni_ID integer,
                         last_name text,
                         first_name text,
                         CORE_student text,
@@ -225,7 +280,9 @@ def _create_db_table():
                         performing_arts text
                         )'''
     sql_table_contact = '''CREATE table IF NOT EXISTS Contact_Events (
-                        unique_ID integer,
+                        alumni_ID integer,
+                        last_name text,
+                        first_name text,
                         contact_date text,
                         status text,
                         need text,
@@ -237,12 +294,20 @@ def _create_db_table():
                         first_name text,
                         birthday text
                         )'''
+    sql_i_row = ''' INSERT INTO Alumni_ID (alumni_ID, last_name)
+                    VALUES (1000, 'Test')
+                    '''
+    sql_delete_i_row = '''  DELETE FROM Alumni_ID
+                            WHERE alumni_ID IS 1000 AND last_name IS 'Test'
+                            '''
     
     connection = _db_connection()
     c = connection.cursor()
     c.execute(sql_table_basic)
     c.execute(sql_table_contact)
     c.execute(sql_table_ID)
+    c.execute(sql_i_row)
+    c.execute(sql_delete_i_row)
     connection.commit()
     connection.close()
 

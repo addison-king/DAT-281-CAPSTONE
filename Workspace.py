@@ -16,35 +16,11 @@ import uuid
 def main():
     _set_dir()
     
-    alumni = pd.read_csv('MOCK_Basic_Info.csv')
-    new_alumni = alumni[['last_name','first_name','birthday']].copy()
-    new_alumni['birthday'] = pd.to_datetime(new_alumni['birthday']).dt.strftime('%m-%d-%Y')
-
-    query = ''' SELECT COUNT(*), first_name, last_name, birthday
-                FROM Alumni_ID
-                WHERE last_name= :last AND first_name= :first AND birthday= :bday
-                GROUP BY last_name
-                '''
-
+    new_call = pd.read_csv('2.csv')
+    new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
     connection = _db_connection()
-    for i in new_alumni.index:
-
-        last_name = new_alumni.loc[i,'last_name']
-        first_name = new_alumni.loc[i,'first_name']
-        bday = new_alumni.loc[i,'birthday']
-        
-        df = pd.read_sql(query, params={'last': last_name, 
-                                        'first': first_name,
-                                        'bday': bday},
-                         con=connection)
-        if not len(df) >0:
-            new_alumni.to_sql('Alumni_ID', connection, index=False,
-                              if_exists='append')
-            connection.commit()
-        else:
-            print('\'',first_name,' ', last_name, '\' already exists..',
-                  sep='')
-            
+    new_call.to_sql('Contact_Events', connection, index=False,
+                    if_exists='append')
     connection.close()
 
 

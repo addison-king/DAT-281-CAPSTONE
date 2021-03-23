@@ -11,6 +11,23 @@ Final Project Tracking
 		Export an alumni's basic info
 		Export an alumni's contact log
 	
+	New TABLE (1.25 hours)
+		alumni ID (sqlite3 autoincrement)
+		alumni first
+		alumni last
+	
+	Work in Alumni_ID table to base.py (1.25 hours)
+		remove UUID
+		redo Basic_Info & Contact_Events tables (rename ID cols)
+		initialize autoincrement to start at 1001
+		import new alumni to Basic_Info using the new IDs
+		
+	Import Contact_Events (0.5 hours)
+		export Alumni_ID table to .csv
+		create new test data so the "ID" values are present
+		require "first_name" & "alumni_ID"
+		
+	
 	More Exporting
 		Open ended query?
 		Export based on graduation year
@@ -20,16 +37,8 @@ Final Project Tracking
 	Created MOCK data (1 hour)
 		mockaroo.com
 		
-	New TABLE (1.25 hours)
-		alumni ID (sqlite3 autoincrement)
-		alumni first
-		alumni last
+
 		
 		New alumni >> new table (get ID number) >> ID + Basic Info >> db
 		import new alum >> query sql count last_name >> if>0 then query sql count where last_name==last_name
 		
-	Work in Alumni_ID table to base.py
-		remove UUID
-		redo Basic_Info & Contact_Events tables (rename ID cols)
-		import new alumni to Basic_Info using the new IDs
-		import for Contact_Events require "last_name" & "alumni_ID"
