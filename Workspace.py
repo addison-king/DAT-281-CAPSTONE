@@ -12,16 +12,26 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 import uuid
+import PySimpleGUI as sg
 
 def main():
     _set_dir()
     
-    new_call = pd.read_csv('2.csv')
-    new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
-    connection = _db_connection()
-    new_call.to_sql('Contact_Events', connection, index=False,
-                    if_exists='append')
-    connection.close()
+    layout = [[sg.Text("Hello from PySimpleGUI")], 
+              [sg.Button("OK")]]
+
+    # Create the window
+    window = sg.Window("Demo: Hello World", layout)
+    
+    # Create an event loop
+    while True:
+        event, values = window.read()
+        # End program if user closes window or
+        # presses the OK button
+        if event == "OK" or event == sg.WIN_CLOSED:
+            break
+    
+    window.close()
 
 
     

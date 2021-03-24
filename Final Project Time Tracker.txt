@@ -11,6 +11,9 @@ Final Project Tracking
 		Export an alumni's basic info
 		Export an alumni's contact log
 	
+	Created MOCK data (1 hour)
+		mockaroo.com
+	
 	New TABLE (1.25 hours)
 		alumni ID (sqlite3 autoincrement)
 		alumni first
@@ -34,8 +37,7 @@ Final Project Tracking
 		
 	Edit Alumni basic info
 	
-	Created MOCK data (1 hour)
-		mockaroo.com
+
 		
 
 		
