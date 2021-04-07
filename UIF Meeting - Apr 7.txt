@@ -1,0 +1,59 @@
+Apr 7, 2021 Meeting
+	BG & Kirsten
+
+Question for Eric:
+	The more I think about how to simplify and cover all cases, the more I get bogged down and struggle to get out.
+
+Pre-Meeting Notes
+	Input
+		K.I.S.S.
+		How do we make inputting as simple as possible?
+		
+		What does their current input process consist of?
+		
+		Eric:
+			write a nice script to interact with google to a known place
+			link a google form to the alumni #, firstname, lastname
+		
+	Output
+		Focus on WHAT they want
+		Focus on WHAT they currently use
+			This leads us to figuring out HOW to deliver
+			
+		How to visualize alumni in the db?
+			What do they want to be able to see? 
+			How would they like the output to be?
+
+		Customize queries?
+			Eric: don't tackle the custom queries 
+				focus on reports and what they use right now
+					build a few reports that answers questions they have
+					questions about their goal
+						e.g. which alumni do we reach out first with our available time?
+					organizations that they are trying to optimize
+						I can then write scripts to answer these questions
+					
+					
+Meeting Notes - Setup
+	Input
+		Google Forms
+			New alumni form
+			New contact with alumni
+			"Anything else?"
+			Fill in the boxes, create .csv, run the script
+		External document with ID numbers for reference
+	
+	Output
+		Report on which alumni to contact next based on time since last contact
+		When using the excel sheets, what data do you extract to then use?
+	
+Meeting Notes - Kirsten
+	Input
+		
+	Report
+		This many people went to college 
+		Currently at a job	
+		
+	Output 
+		CORE alumni first
+		
