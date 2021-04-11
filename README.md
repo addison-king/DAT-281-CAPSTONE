@@ -18,6 +18,6 @@ Work with a local nonprofit (Urban Impact Foundation, "UIF") to develop a tool t
 4. Presentation of final product to CCAC (**May 17, 2021**)
 
 ## PMBOK - "Precedence Diagramming Method"
-#### Development - Beta Phase
+### Development - Beta Phase
 Focusing on the beta stage of the project, use of the "Precedence Diagramming Method" from PMBOK (6th ed), a plan was developed to complete the beta phase by the due date April 26, 2021.
 ![BG Milestones](https://raw.githubusercontent.com/brandyn-gilbert/DAT-281-CAPSTONE/4f17dc82343eeda4c372d9a57cb85cc6294fae85/Timeline/milestones.svg)
