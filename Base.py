@@ -17,6 +17,7 @@ def main():
     mm_choice = _menu_main()
     if(mm_choice == '1'):
         _import_alumni()
+        _export_alumni_name_list()
     elif(mm_choice == '2'):
         _import_new_interaction()
     elif(mm_choice == '3'):
@@ -73,11 +74,15 @@ def _edit_alumni():
 
 def _import_alumni():
     """
-    Reads in .csv with new alumni data. Checks to make sure the alumni doesn't
-        already exist. Adds all new alumni to database where an ID number is
-        assigned. 
-    Retrieves the new ID number, adds it to the dataframe. Then the dataframe
-        containing all pertinent info is added to the database.
+    Reads in .csv with new alumni data. 
+    Drops the Timestamp col (generated from google forms).
+    Renames the columns to match the database.
+    Changes the case to titlecase for these cols: address, city, state,
+                       church, highschool, college, job
+    Checks to make sure the alumni doesn't already exist. 
+    Adds all new alumni to database where an ID number is assigned. 
+    Retrieves the new ID number, adds it to the dataframe. 
+    Then the dataframe containing all pertinent info is added to the database.
         
     Returns
     -------
@@ -86,6 +91,44 @@ def _import_alumni():
     """
     
     alumni = pd.read_csv('MOCK_Basic_Info.csv')
+    alumni.drop('Timestamp', axis=1, inplace=True)
+    col_names = ["last_name",
+                "first_name",
+                "CORE_student",
+                "graduation_year",
+                "phone_num",
+                "birthday",
+                "gender",
+                "address",
+                "city",
+                "state",
+                "zipcode",
+                "email",
+                "church",
+                "highschool",
+                "college",
+                "job",
+                "health_info",
+                "parent_guardian",
+                "parent_guardian_phone_num",
+                "parent_guardian_email",
+                "emergency_contact",
+                "emergency_contact_phone_number",
+                "OPTIONS",
+                "education",
+                "athletics",
+                "performing_arts"]
+    alumni.columns = col_names
+    title_case_list = ['address',
+                       'city',
+                       'state',
+                       'church',
+                       'highschool',
+                       'college',
+                       'job']
+    for i in title_case_list:
+        alumni[i] = alumni[i].str.title()
+    
     alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
@@ -146,6 +189,39 @@ def _import_alumni():
     connection.commit()
     connection.close()
     
+def _export_alumni_name_list():
+    """
+    Opens a connection to the database.
+    Queries the database.
+    Output is put into a dataframe.
+    Dataframe is written to .csv file.
+
+    Returns
+    -------
+    None.
+
+    """
+    connection = _db_connection()
+    c = connection.cursor()
+    
+    query = ''' SELECT alumni_ID, first_name, last_name, 
+                       graduation_year, CORE_student
+                FROM Basic_Info
+                ORDER BY last_name ASC
+              '''
+              
+    output = pd.read_sql(query, con=connection)   
+    connection.close()
+    col_names = ['ID Number',
+                 'First Name',
+                 'Last Name',
+                 'Graduation Year',
+                 'CORE?']
+    output.columns = col_names
+    file_name = 'Master Alumni List.csv'
+    output.to_csv(file_name, index=False, encoding='utf-8')
+    
+
 def _export_alumni():
     """
     Asks the user to input a last name and a first name.
