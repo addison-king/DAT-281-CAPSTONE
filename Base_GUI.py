@@ -26,7 +26,7 @@ def main():
 
     """
     _create_db_table()
-    sg.theme('SystemDefault')
+    sg.theme('DarkBlue3')
 
     layout = [[sg.Text('Please select an action that you would like to perform:',
                        size=(25,3),
@@ -287,11 +287,11 @@ def _import_alumni(location):
         last_name = alumni.loc[i,'last_name']
         first_name = alumni.loc[i,'first_name']
         bday = alumni.loc[i,'birthday']
-        df = pd.read_sql(query_1, params={'last': last_name,
+        sq_df = pd.read_sql(query_1, params={'last': last_name,
                                         'first': first_name,
                                         'bday': bday},
                          con=connection)
-        if len(df) == 0:
+        if len(sq_df) == 0:
             data = [[last_name, first_name, bday]]
             add_alumni = pd.DataFrame(data, columns = ['last_name',
                                                        'first_name',
@@ -317,12 +317,12 @@ def _import_alumni(location):
         first_name = alumni.loc[i, 'first_name']
         bday = alumni.loc[i, 'birthday']
 
-        df = pd.read_sql(query_2, params={'last': last_name,
+        sq_df = pd.read_sql(query_2, params={'last': last_name,
                                         'first': first_name,
                                         'bday': bday},
                          con=connection)
-        if len(df) == 1:
-            alum_num = int(df.loc[0,'alumni_ID'])
+        if len(sq_df) == 1:
+            alum_num = int(sq_df.loc[0,'alumni_ID'])
             alumni.at[i, 'alumni_ID'] = alum_num
             values = alumni.loc[i]
             new = pd.DataFrame(columns = alumni.columns)
@@ -330,7 +330,7 @@ def _import_alumni(location):
             new.to_sql('Basic_Info', connection, index=False,
                           if_exists='append')
         else:
-            print('DF error. length of:', len(df))
+            print('DF error. length of:', len(sq_df))
 
     connection.commit()
     connection.close()
@@ -388,12 +388,12 @@ def _create_db_table():
                             '''
 
     connection = _db_connection()
-    c = connection.cursor()
-    c.execute(sql_table_basic)
-    c.execute(sql_table_contact)
-    c.execute(sql_table_id)
-    c.execute(sql_i_row)
-    c.execute(sql_delete_i_row)
+    cursor = connection.cursor()
+    cursor.execute(sql_table_basic)
+    cursor.execute(sql_table_contact)
+    cursor.execute(sql_table_id)
+    cursor.execute(sql_i_row)
+    cursor.execute(sql_delete_i_row)
     connection.commit()
     connection.close()
 
