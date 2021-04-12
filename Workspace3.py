@@ -15,54 +15,56 @@ import PySimpleGUI as sg
 
 def main():
 
-    alumni = pd.read_csv('MOCK_Data\\New_Alumni.csv')
-    alumni.drop('Timestamp', axis=1, inplace=True)
-    col_names = ["last_name",
-                "first_name",
-                "CORE_student",
-                "graduation_year",
-                "phone_num",
-                "birthday",
-                "gender",
-                "address",
-                "city",
-                "state",
-                "zipcode",
-                "email",
-                "church",
-                "highschool",
-                "college",
-                "job",
-                "health_info",
-                "parent_guardian",
-                "parent_guardian_phone_num",
-                "parent_guardian_email",
-                "emergency_contact",
-                "emergency_contact_phone_number",
-                "OPTIONS",
-                "education",
-                "athletics",
-                "performing_arts"]
-    alumni.columns = col_names
-    title_case_list = ['address',
-                       'city',
-                       'state',
-                       'church',
-                       'highschool',
-                       'college',
-                       'job']
-    for i in title_case_list:
-        alumni[i] = alumni[i].str.title()
-    
-    alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
-    
-    for i in alumni.index:
-        values = alumni.loc[i]
-        new = pd.DataFrame(columns = alumni.columns)
-        new = new.append(values, ignore_index = True)
-        print(new)
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-    
+
+    layout = [[sg.Text('Please select an action that you would like to perform:',
+                       size=(25,3),
+                       font=('Arial', 15))],
+          [sg.Button('Import new alumni to the database', 
+                     key='alum',
+                     size=(30,1))],
+          [sg.Button('Import new interaction with alumni', 
+                     key='interaction',
+                     size=(30,1))],
+          [sg.Text('_'  * 100, size=(32, 1))],
+          [sg.Button('Export list of alumni with ID numbers', 
+                     key='export_ID',
+                     size=(30,1))],
+          [sg.Button('Export list of next alumni to contact', 
+                     key='contact',
+                     size=(30,1))],
+          [sg.Text('_'  * 100, size=(32, 1))],
+          [sg.Button('Close the program', 
+                     key='close',
+                     size=(30,1))]]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+
+    while True:
+        event = window.read()
+        print(event[0])
+# =============================================================================
+#         print(event)
+# =============================================================================
+        if event[0] == sg.WIN_CLOSED:
+            break
+# =============================================================================
+#         if event == 'alum':
+#             window.close()
+#             
+#         elif event == 'interaction':
+#             window.close()
+#             
+#         elif event == 'export_ID':
+#             window.close()
+#             
+#         elif event == 'contact':
+#             window.close()
+#             #Call a fucntion to output the next call list
+#         elif event in('close', sg.WIN_CLOSED):
+#             break
+# =============================================================================
+
+    window.close()
     
     
     

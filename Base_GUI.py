@@ -6,7 +6,7 @@ Final Project for CCAC DAT-281
 @author: BKG
 """
 
-from pathlib import Path
+# from pathlib import Path
 import os
 import sys
 import sqlite3
@@ -15,60 +15,125 @@ import pandas as pd
 import PySimpleGUI as sg
 
 def main():
+    """
+    The main menu
+    Present ths user with a gui and 4 buttons to choose from
+    Based on what the user clicks on, executes other functions or closes
+
+    Returns
+    -------
+    None.
+
+    """
     _create_db_table()
+    sg.theme('SystemDefault')
 
     layout = [[sg.Text('Please select an action that you would like to perform:',
                        size=(25,3),
                        font=('Arial', 15))],
-          [sg.Button('Import new alumni to the database', 
+          [sg.Button('Import new alumni to the database',
                      key='alum',
                      size=(30,1))],
-          [sg.Button('Import new interaction with alumni', 
+          [sg.Button('Import new interaction with alumni',
                      key='interaction',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
-          [sg.Button('Export list of alumni with ID numbers', 
+          [sg.Button('Export list of alumni with ID numbers',
                      key='export_ID',
                      size=(30,1))],
-          [sg.Button('Export list of next alumni to contact', 
+          [sg.Button('Export list of next alumni to contact',
                      key='contact',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
-          [sg.Button('Close the program', 
+          [sg.Button('Close the program',
                      key='close',
                      size=(30,1))]]
 
     window = sg.Window('UIF: Alumni Database', layout)
 
     while True:
-        event, values = window.read()
-        if event == 'alum':
+        event = window.read()
+        if event[0] == 'alum':
             window.close()
             _new_alumni_gui()
-        elif event == 'interaction':
+        elif event[0] == 'interaction':
             window.close()
             _new_interaction_gui()
-        elif event == 'export_ID':
+        elif event[0] == 'export_ID':
             window.close()
-            #Call a function to output the master list of alumni
-        elif event == 'contact':
+            _export_alumni_name_list()
+        elif event[0] == 'contact':
             window.close()
             #Call a fucntion to output the next call list
-        elif event in('close', sg.WIN_CLOSED):
+        elif event[0] in ('close', sg.WIN_CLOSED):
             break
 
     window.close()
 
 def _select_file():
-    layout = [[sg.Text('Filename')],
-          [sg.Input(), sg.FileBrowse()],
-          [sg.OK(), sg.Cancel()] ]
+    layout = [[sg.Text('Folder Location')],
+              [sg.Input(), sg.FileBrowse()],
+              [sg.OK(), sg.Cancel()] ]
 
-    window = sg.Window('Get filename example', layout)
-    event, values = window.read()
+    window = sg.Window('UIF: Alumni Database', layout)
+    values = window.read()
     window.close()
-    return values[0]
-        
+    return values[1][0]
+
+def _select_folder():
+    layout = [[sg.Text('Folder Location')],
+              [sg.Input(), sg.FolderBrowse()],
+              [sg.OK(), sg.Cancel()] ]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+    values = window.read()
+    window.close()
+    return values[1][0]
+
+def _all_good():
+    layout = [[sg.Text('Everything completed without errors.',
+               font=('Arial', 15))],
+              [sg.Button('Exit the program', key='close')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+    while True:
+        event = window.read()
+        if event[0] in ('close', sg.WIN_CLOSED):
+            break
+    window.close()
+
+def _export_alumni_name_list():
+    """
+    Opens a connection to the database.
+    Queries the database.
+    Output is put into a dataframe.
+    Dataframe is written to .csv file.
+
+    Returns
+    -------
+    None.
+
+    """
+    connection = _db_connection()
+
+    query = ''' SELECT alumni_ID, first_name, last_name,
+                       graduation_year, CORE_student
+                FROM Basic_Info
+                ORDER BY last_name ASC
+              '''
+
+    output = pd.read_sql(query, con=connection)
+    connection.close()
+    col_names = ['ID Number',
+                 'First Name',
+                 'Last Name',
+                 'Graduation Year',
+                 'CORE?']
+    output.columns = col_names
+    file_name = 'Master Alumni List.csv'
+    path = _select_folder()
+    os.chdir(path)
+    output.to_csv(file_name, index=False, encoding='utf-8')
+    _all_good()
 
 def _new_alumni_gui():
     location = _select_file()
@@ -87,21 +152,26 @@ def _new_alumni_gui():
                   auto_size_columns=True,
                   num_rows=min(25, len(data)))],
               [sg.Button('Confirm', key='import')],
-              [sg.Button('Cancel - Do NOT Add', key='cancel')],
+              [sg.Button('Cancel', key='cancel')],
               [sg.Button('Main Menu', key='main')]]
     window = sg.Window('UIF: Alumni Database', layout)
 
     while True:
-        event, values = window.read()
-        if event == 'import':
+        event = window.read()
+        if event[0] == 'import':
             window.close()
             _import_alumni(location)
-        elif event == 'main':
+            _all_good()
+        elif event[0] == 'main':
             window.close()
             main()
-        elif event in ('cancel', sg.WIN_CLOSED):
+        elif event[0] == 'cancel':
+            window.close()
+            main()
+        elif event[0] == sg.WIN_CLOSED:
             break
     window.close()
+
 
 def _new_interaction_gui():
     location = _select_file()
@@ -127,18 +197,21 @@ def _new_interaction_gui():
     window = sg.Window('UIF: Alumni Database', layout)
 
     while True:
-        event, values = window.read()
-        if event == 'import':
+        event = window.read()
+        if event[0] == 'import':
             _import_new_interaction(location)
-        elif event == 'main':
+        elif event[0] == 'main':
             window.close()
             main()
-        elif event in ('cancel', sg.WIN_CLOSED):
+        elif event[0] in ('cancel', sg.WIN_CLOSED):
             break
     window.close()
+    _all_good()
 
 def _import_new_interaction(location):
     new_call = pd.read_csv(location)
+    print(new_call)
+    input(1)
     new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
     connection = _db_connection()
     new_call.to_sql('Contact_Events', connection, index=False,
@@ -147,22 +220,22 @@ def _import_new_interaction(location):
 
 def _import_alumni(location):
     """
-    Reads in .csv with new alumni data. 
+    Reads in .csv with new alumni data.
     Drops the Timestamp col (generated from google forms).
     Renames the columns to match the database.
     Changes the case to titlecase for these cols: address, city, state,
                        church, highschool, college, job
-    Checks to make sure the alumni doesn't already exist. 
-    Adds all new alumni to database where an ID number is assigned. 
-    Retrieves the new ID number, adds it to the dataframe. 
+    Checks to make sure the alumni doesn't already exist.
+    Adds all new alumni to database where an ID number is assigned.
+    Retrieves the new ID number, adds it to the dataframe.
     Then the dataframe containing all pertinent info is added to the database.
-        
+
     Returns
     -------
     None.
 
     """
-    
+
     alumni = pd.read_csv(location)
     alumni.drop('Timestamp', axis=1, inplace=True)
     col_names = ["last_name",
@@ -201,7 +274,7 @@ def _import_alumni(location):
                        'job']
     for i in title_case_list:
         alumni[i] = alumni[i].str.title()
-    
+
     alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
@@ -209,12 +282,12 @@ def _import_alumni(location):
                 WHERE last_name= :last AND first_name= :first AND birthday= :bday
                 GROUP BY last_name
                 '''
-    connection = _db_connection()                
+    connection = _db_connection()
     for i in alumni.index:
         last_name = alumni.loc[i,'last_name']
         first_name = alumni.loc[i,'first_name']
         bday = alumni.loc[i,'birthday']
-        df = pd.read_sql(query_1, params={'last': last_name, 
+        df = pd.read_sql(query_1, params={'last': last_name,
                                         'first': first_name,
                                         'bday': bday},
                          con=connection)
@@ -228,14 +301,14 @@ def _import_alumni(location):
         else:
             print('\'',first_name,' ', last_name, '\' already exists..',
                   sep='')
-    connection.commit()        
+    connection.commit()
     connection.close()
 
 #import alumni now that IDs have been assigned
     query_2 = ''' SELECT alumni_ID
                   FROM Alumni_ID
-                  WHERE first_name= :first AND 
-                        last_name= :last AND 
+                  WHERE first_name= :first AND
+                        last_name= :last AND
                         birthday= :bday
                         '''
     connection = _db_connection()
@@ -299,9 +372,9 @@ def _create_db_table():
                         contact_date text,
                         status text,
                         need text,
-                        notes text               
+                        notes text
                         )'''
-    sql_table_ID = '''CREATE table IF NOT EXISTS Alumni_ID (
+    sql_table_id = '''CREATE table IF NOT EXISTS Alumni_ID (
                         alumni_ID integer PRIMARY KEY AUTOINCREMENT,
                         last_name text,
                         first_name text,
@@ -313,12 +386,12 @@ def _create_db_table():
     sql_delete_i_row = '''  DELETE FROM Alumni_ID
                             WHERE alumni_ID IS 1000 AND last_name IS 'Test'
                             '''
-    
+
     connection = _db_connection()
     c = connection.cursor()
     c.execute(sql_table_basic)
     c.execute(sql_table_contact)
-    c.execute(sql_table_ID)
+    c.execute(sql_table_id)
     c.execute(sql_i_row)
     c.execute(sql_delete_i_row)
     connection.commit()
@@ -331,7 +404,7 @@ def _db_connection():
     Returns
     -------
     connection : sqlite db connection
-        
+
     '''
     try:
         connection = sqlite3.connect('MOCK_Data\\MOCK_Data.db')
