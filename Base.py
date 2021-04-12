@@ -6,6 +6,7 @@ Created on Fri Mar 19 13:33:21 2021
 
 from pathlib import Path
 import os
+import sys
 import sqlite3
 from sqlite3 import Error
 import pandas as pd
@@ -48,7 +49,7 @@ def _menu_main():
     return mm_value
 
 def _import_new_interaction():
-    new_call = pd.read_csv('MOCK_Contact_Event.csv')
+    new_call = pd.read_csv('MOCK_Data\MOCK_Contact_Event.csv')
     new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
     connection = _db_connection()
     new_call.to_sql('Contact_Events', connection, index=False,
@@ -90,7 +91,7 @@ def _import_alumni():
 
     """
     
-    alumni = pd.read_csv('MOCK_Basic_Info.csv')
+    alumni = pd.read_csv('MOCK_Data\\New_Alumni.csv')
     alumni.drop('Timestamp', axis=1, inplace=True)
     col_names = ["last_name",
                 "first_name",
@@ -147,14 +148,17 @@ def _import_alumni():
                                         'first': first_name,
                                         'bday': bday},
                          con=connection)
+        print(df)
+        input()
         if len(df) == 0:
             add_alumni = alumni[['last_name','first_name','birthday']].copy()
+            add_alumni.to_sql('Alumni_ID', connection, index=False,
+                      if_exists='append')
         else:
             print('\'',first_name,' ', last_name, '\' already exists..',
                   sep='')
      
-    add_alumni.to_sql('Alumni_ID', connection, index=False,
-                      if_exists='append')
+    
     connection.commit()        
     connection.close()
     
@@ -176,15 +180,19 @@ def _import_alumni():
                                         'first': first_name,
                                         'bday': bday},
                          con=connection)
+        print(df)
+        input()
+        
         if len(df) == 1:
             alum_num = int(df.loc[0,'alumni_ID'])
             alumni.at[i, 'alumni_ID'] = alum_num
+            alumni.to_sql('Basic_Info', connection, index=False,
+                  if_exists='append')
 
         else:
             print('DF error. length of:', len(df))
     
-    alumni.to_sql('Basic_Info', connection, index=False,
-                  if_exists='append')
+    
     
     connection.commit()
     connection.close()
@@ -303,27 +311,30 @@ def _set_dir():
     None.
 
     """
-    cwd = os.getcwd()
-    if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data' or
-           cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data'):
-        while True:
-            local_machine = input('Laptop or Desktop?').upper()
-            if not (local_machine == 'LAPTOP' or local_machine == 'DESKTOP' 
-                    or local_machine == 'L' or local_machine == 'D'):
-                print('please enter only either: laptop or desktop')
-                continue
-            else:
-                break
-            
-        if(local_machine == 'LAPTOP' or local_machine == 'L'):
-            os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
-            print('wd is now:', os.getcwd())
-        else:
-            os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
-            print(os.getcwd())
-            print('wd is now:', os.getcwd())
-    else:
-        print('wd already set:', os.getcwd())
+    os.chdir(os.path.dirname(sys.argv[0]))
+# =============================================================================
+#     cwd = os.getcwd()
+#     if not(cwd == 'C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data' or
+#            cwd == 'C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data'):
+#         while True:
+#             local_machine = input('Laptop or Desktop?').upper()
+#             if not (local_machine == 'LAPTOP' or local_machine == 'DESKTOP' 
+#                     or local_machine == 'L' or local_machine == 'D'):
+#                 print('please enter only either: laptop or desktop')
+#                 continue
+#             else:
+#                 break
+#             
+#         if(local_machine == 'LAPTOP' or local_machine == 'L'):
+#             os.chdir('C:\\Users\\BKG\\OneDrive\\Desktop\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
+#             print('wd is now:', os.getcwd())
+#         else:
+#             os.chdir('C:\\Users\\falconfoe\\Documents\\GitHub\\DAT-281-CAPSTONE\\MOCK_Data')
+#             print(os.getcwd())
+#             print('wd is now:', os.getcwd())
+#     else:
+#         print('wd already set:', os.getcwd())
+# =============================================================================
         
 def _create_db_table():
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
@@ -397,7 +408,7 @@ def _db_connection():
         
     '''
     try:
-        connection = sqlite3.connect('MOCK_Data.db')
+        connection = sqlite3.connect('MOCK_Data\\MOCK_Data.db')
     except Error:
         print(Error)
     return connection
