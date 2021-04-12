@@ -115,7 +115,7 @@ def _export_alumni_name_list():
     """
     connection = _db_connection()
 
-    query = ''' SELECT alumni_ID, first_name, last_name,
+    query = ''' SELECT ID_number, first_name, last_name,
                        graduation_year, CORE_student
                 FROM Basic_Info
                 ORDER BY last_name ASC
@@ -278,7 +278,7 @@ def _import_alumni(location):
     alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
-                FROM Alumni_ID
+                FROM ID_number
                 WHERE last_name= :last AND first_name= :first AND birthday= :bday
                 GROUP BY last_name
                 '''
@@ -296,7 +296,7 @@ def _import_alumni(location):
             add_alumni = pd.DataFrame(data, columns = ['last_name',
                                                        'first_name',
                                                        'birthday'])
-            add_alumni.to_sql('Alumni_ID', connection, index=False,
+            add_alumni.to_sql('ID_number', connection, index=False,
                       if_exists='append')
         else:
             print('\'',first_name,' ', last_name, '\' already exists..',
@@ -305,8 +305,8 @@ def _import_alumni(location):
     connection.close()
 
 #import alumni now that IDs have been assigned
-    query_2 = ''' SELECT alumni_ID
-                  FROM Alumni_ID
+    query_2 = ''' SELECT ID_number
+                  FROM ID_number
                   WHERE first_name= :first AND
                         last_name= :last AND
                         birthday= :bday
@@ -322,8 +322,8 @@ def _import_alumni(location):
                                         'bday': bday},
                          con=connection)
         if len(sq_df) == 1:
-            alum_num = int(sq_df.loc[0,'alumni_ID'])
-            alumni.at[i, 'alumni_ID'] = alum_num
+            alum_num = int(sq_df.loc[0,'ID_number'])
+            alumni.at[i, 'ID_number'] = alum_num
             values = alumni.loc[i]
             new = pd.DataFrame(columns = alumni.columns)
             new = new.append(values, ignore_index = True)
@@ -337,7 +337,7 @@ def _import_alumni(location):
 
 def _create_db_table():
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
-                        alumni_ID integer,
+                        ID_number integer,
                         last_name text,
                         first_name text,
                         CORE_student text,
@@ -366,7 +366,7 @@ def _create_db_table():
                         performing_arts text
                         )'''
     sql_table_contact = '''CREATE table IF NOT EXISTS Contact_Events (
-                        alumni_ID integer,
+                        ID_number integer,
                         last_name text,
                         first_name text,
                         contact_date text,
@@ -375,16 +375,22 @@ def _create_db_table():
                         notes text
                         )'''
     sql_table_id = '''CREATE table IF NOT EXISTS Alumni_ID (
-                        alumni_ID integer PRIMARY KEY AUTOINCREMENT,
+                        ID_number integer PRIMARY KEY AUTOINCREMENT,
                         last_name text,
                         first_name text,
                         birthday text
                         )'''
-    sql_i_row = ''' INSERT INTO Alumni_ID (alumni_ID, last_name)
+    sql_table_last_d = '''CREATE table IF NOT EXISTS Last_Contact (
+                            ID_number integer PRIMARY KEY AUTOINCREMENT,
+                            last_name text,
+                            first_name text,
+                            last_date text
+                        )'''
+    sql_i_row = ''' INSERT INTO Alumni_ID (ID_number, last_name)
                     VALUES (1000, 'Test')
                     '''
     sql_delete_i_row = '''  DELETE FROM Alumni_ID
-                            WHERE alumni_ID IS 1000 AND last_name IS 'Test'
+                            WHERE ID_number IS 1000 AND last_name IS 'Test'
                             '''
 
     connection = _db_connection()
@@ -392,6 +398,7 @@ def _create_db_table():
     cursor.execute(sql_table_basic)
     cursor.execute(sql_table_contact)
     cursor.execute(sql_table_id)
+    cursor.execute(sql_table_last_d)
     cursor.execute(sql_i_row)
     cursor.execute(sql_delete_i_row)
     connection.commit()
