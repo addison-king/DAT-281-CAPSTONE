@@ -229,6 +229,8 @@ def _import_alumni(location):
     Adds all new alumni to database where an ID number is assigned.
     Retrieves the new ID number, adds it to the dataframe.
     Then the dataframe containing all pertinent info is added to the database.
+    Finally, each new alumni is initialized in the Last_Contact table where
+        'last_date' is given a starting date of June 1, (grad year).
 
     Returns
     -------
@@ -278,7 +280,7 @@ def _import_alumni(location):
     alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
-                FROM ID_number
+                FROM Alumni_ID
                 WHERE last_name= :last AND first_name= :first AND birthday= :bday
                 GROUP BY last_name
                 '''
@@ -296,7 +298,7 @@ def _import_alumni(location):
             add_alumni = pd.DataFrame(data, columns = ['last_name',
                                                        'first_name',
                                                        'birthday'])
-            add_alumni.to_sql('ID_number', connection, index=False,
+            add_alumni.to_sql('Alumni_ID', connection, index=False,
                       if_exists='append')
         else:
             print('\'',first_name,' ', last_name, '\' already exists..',
@@ -306,7 +308,7 @@ def _import_alumni(location):
 
 #import alumni now that IDs have been assigned
     query_2 = ''' SELECT ID_number
-                  FROM ID_number
+                  FROM Alumni_ID
                   WHERE first_name= :first AND
                         last_name= :last AND
                         birthday= :bday
@@ -333,6 +335,38 @@ def _import_alumni(location):
             print('DF error. length of:', len(sq_df))
 
     connection.commit()
+    connection.close()
+
+#initialize all the new alumni to the "Last_Contact" Table
+    connection = _db_connection()
+    query = ''' SELECT ID_number, first_name, last_name,
+                       CORE_student, graduation_year
+                FROM Basic_Info
+                ORDER BY last_name ASC
+              '''
+    output = pd.read_sql(query, con=connection)
+    connection.close()
+    col_names = ['ID_number',
+                 'first_name',
+                 'last_name',
+                 'CORE_student',
+                 'graduation_year']
+    output.columns = col_names
+    for i in output.index:
+        last_date = str(output.iloc[i,4])
+        last_date = last_date + '-06-01'
+        output.at[i, 'last_date'] = last_date
+
+    output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
+    output.drop(columns=['graduation_year'], inplace = True)
+    output = output[['ID_number',
+                     'last_name',
+                     'first_name',
+                     'CORE_student',
+                     'last_date']]
+    connection = _db_connection()
+    output.to_sql('Last_Contact', connection, index=False,
+                    if_exists='append')
     connection.close()
 
 def _create_db_table():
@@ -384,7 +418,9 @@ def _create_db_table():
                             ID_number integer PRIMARY KEY AUTOINCREMENT,
                             last_name text,
                             first_name text,
+                            CORE_student text,
                             last_date text
+
                         )'''
     sql_i_row = ''' INSERT INTO Alumni_ID (ID_number, last_name)
                     VALUES (1000, 'Test')
