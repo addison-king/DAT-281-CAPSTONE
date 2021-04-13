@@ -303,71 +303,75 @@ def _import_alumni(location):
         else:
             print('\'',first_name,' ', last_name, '\' already exists..',
                   sep='')
+            alumni = alumni.drop(i)
     connection.commit()
     connection.close()
 
 #import alumni now that IDs have been assigned
-    query_2 = ''' SELECT ID_number
-                  FROM Alumni_ID
-                  WHERE first_name= :first AND
-                        last_name= :last AND
-                        birthday= :bday
-                        '''
-    connection = _db_connection()
-    for i in alumni.index:
-        last_name = alumni.loc[i, 'last_name']
-        first_name = alumni.loc[i, 'first_name']
-        bday = alumni.loc[i, 'birthday']
+    if len(alumni) != 0:
+        query_2 = ''' SELECT ID_number
+                      FROM Alumni_ID
+                      WHERE first_name= :first AND
+                            last_name= :last AND
+                            birthday= :bday
+                            '''
+        connection = _db_connection()
+        for i in alumni.index:
+            last_name = alumni.loc[i, 'last_name']
+            first_name = alumni.loc[i, 'first_name']
+            bday = alumni.loc[i, 'birthday']
 
-        sq_df = pd.read_sql(query_2, params={'last': last_name,
-                                        'first': first_name,
-                                        'bday': bday},
-                         con=connection)
-        if len(sq_df) == 1:
-            alum_num = int(sq_df.loc[0,'ID_number'])
-            alumni.at[i, 'ID_number'] = alum_num
-            values = alumni.loc[i]
-            new = pd.DataFrame(columns = alumni.columns)
-            new = new.append(values, ignore_index = True)
-            new.to_sql('Basic_Info', connection, index=False,
-                          if_exists='append')
-        else:
-            print('DF error. length of:', len(sq_df))
+            sq_df = pd.read_sql(query_2, params={'last': last_name,
+                                            'first': first_name,
+                                            'bday': bday},
+                             con=connection)
+            if len(sq_df) == 1:
+                alum_num = int(sq_df.loc[0,'ID_number'])
+                alumni.at[i, 'ID_number'] = alum_num
+                values = alumni.loc[i]
+                new = pd.DataFrame(columns = alumni.columns)
+                new = new.append(values, ignore_index = True)
+                new.to_sql('Basic_Info', connection, index=False,
+                              if_exists='append')
+            else:
+                print('DF error. length of:', len(sq_df))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+        connection.close()
 
-#initialize all the new alumni to the "Last_Contact" Table
-    connection = _db_connection()
-    query = ''' SELECT ID_number, first_name, last_name,
-                       CORE_student, graduation_year
-                FROM Basic_Info
-                ORDER BY last_name ASC
-              '''
-    output = pd.read_sql(query, con=connection)
-    connection.close()
-    col_names = ['ID_number',
-                 'first_name',
-                 'last_name',
-                 'CORE_student',
-                 'graduation_year']
-    output.columns = col_names
-    for i in output.index:
-        last_date = str(output.iloc[i,4])
-        last_date = last_date + '-06-01'
-        output.at[i, 'last_date'] = last_date
-
-    output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
-    output.drop(columns=['graduation_year'], inplace = True)
-    output = output[['ID_number',
-                     'last_name',
+    #initialize all the new alumni to the "Last_Contact" Table
+        connection = _db_connection()
+        query = ''' SELECT ID_number, first_name, last_name,
+                           CORE_student, graduation_year
+                    FROM Basic_Info
+                    ORDER BY last_name ASC
+                  '''
+        output = pd.read_sql(query, con=connection)
+        connection.close()
+        col_names = ['ID_number',
                      'first_name',
+                     'last_name',
                      'CORE_student',
-                     'last_date']]
-    connection = _db_connection()
-    output.to_sql('Last_Contact', connection, index=False,
-                    if_exists='append')
-    connection.close()
+                     'graduation_year']
+        output.columns = col_names
+        for i in output.index:
+            last_date = str(output.iloc[i,4])
+            last_date = last_date + '-06-01'
+            output.at[i, 'last_date'] = last_date
+
+        output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
+        output.drop(columns=['graduation_year'], inplace = True)
+        output = output[['ID_number',
+                         'last_name',
+                         'first_name',
+                         'CORE_student',
+                         'last_date']]
+        connection = _db_connection()
+        output.to_sql('Last_Contact', connection, index=False,
+                        if_exists='append')
+        connection.close()
+    else:
+        print('Nothing to add.')
 
 def _create_db_table():
     sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (

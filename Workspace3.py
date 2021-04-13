@@ -15,13 +15,11 @@ import PySimpleGUI as sg
 
 def main():
     connection = _db_connection()
-
     query = ''' SELECT ID_number, first_name, last_name,
                        CORE_student, graduation_year
                 FROM Basic_Info
                 ORDER BY last_name ASC
               '''
-
     output = pd.read_sql(query, con=connection)
     connection.close()
     col_names = ['ID_number',
@@ -30,7 +28,6 @@ def main():
                  'CORE_student',
                  'graduation_year']
     output.columns = col_names
-
     for i in output.index:
         last_date = str(output.iloc[i,4])
         last_date = last_date + '-06-01'
