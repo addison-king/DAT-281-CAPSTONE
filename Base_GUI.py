@@ -64,7 +64,7 @@ def main():
             _export_alumni_name_list()
         elif event[0] == 'contact':
             window.close()
-            #Call a fucntion to output the next call list
+            _export_alumni_contact_list()
         elif event[0] in ('close', sg.WIN_CLOSED):
             break
 
@@ -135,6 +135,34 @@ def _export_alumni_name_list():
     output.to_csv(file_name, index=False, encoding='utf-8')
     _all_good()
 
+def _export_alumni_contact_list():
+    query_read = '''SELECT c.ID_number, c.first_name, c.last_name,
+                           c.CORE_student, c.last_date, b.phone_num, b.email
+                    FROM Last_Contact c
+                    INNER JOIN Basic_Info b
+                        ON c.ID_number = b.ID_number
+                    WHERE last_date < DATE('now', '-90 days')
+                    ORDER BY c.CORE_student DESC, c.last_date ASC
+                 '''
+
+    connection = _db_connection()
+    contact = pd.read_sql(query_read, con=connection)
+    connection.close()
+    col_names = ['ID Number',
+                 'First Name',
+                 'Last Name',
+                 'CORE?',
+                 'Last Contact Date',
+                 'Phone Number',
+                 'Email']
+    contact.columns = col_names
+    file_name = 'Alumni to Contact.csv'
+    path = _select_folder()
+    os.chdir(path)
+    contact.to_csv(file_name, index=False, encoding='utf-8')
+    _all_good
+    
+
 def _new_alumni_gui():
     location = _select_file()
     alumni_display = pd.read_csv(location)
@@ -176,13 +204,22 @@ def _new_alumni_gui():
 def _new_interaction_gui():
     location = _select_file()
     interaction = pd.read_csv(location)
+    col_names = ['ID_number',
+                 'first_name',
+                 'last_name',
+                 'contact_date',
+                 'status',
+                 'need',
+                 'notes']
+    interaction.columns = col_names
     display_cols = ['last_name',
                     'first_name',
                     'contact_date',
                     'notes']
-    interaction = interaction[display_cols]
-    data = interaction.values.tolist()
-    header_list = interaction.columns.tolist()
+    interaction['contact_date'] = pd.to_datetime(interaction['contact_date']).dt.strftime('%Y-%m-%d')
+    display = interaction[display_cols]
+    data = display.values.tolist()
+    header_list = display.columns.tolist()
 
     layout = [[sg.Text('The following alumni interactions will be added'+
                        'to the database: \n')],
@@ -199,7 +236,9 @@ def _new_interaction_gui():
     while True:
         event = window.read()
         if event[0] == 'import':
-            _import_new_interaction(location)
+            window.close()
+            _import_new_interaction(location, interaction)
+            _update_last_contact(location, interaction)
         elif event[0] == 'main':
             window.close()
             main()
@@ -208,13 +247,36 @@ def _new_interaction_gui():
     window.close()
     _all_good()
 
-def _import_new_interaction(location):
-    new_call = pd.read_csv(location)
-    print(new_call)
-    input(1)
-    new_call['contact_date'] = pd.to_datetime(new_call['contact_date']).dt.strftime('%Y-%m-%d')
+def _update_last_contact(location, interaction):
+    query_read = '''SELECT ID_number, last_date
+                 FROM Last_Contact
+                 WHERE ID_number = :id
+              '''
+    query_write = '''UPDATE Last_Contact
+                 SET last_date = ?
+                 WHERE ID_number = ?
+              '''
     connection = _db_connection()
-    new_call.to_sql('Contact_Events', connection, index=False,
+    cursor = connection.cursor()
+    for i in interaction.index:
+        id_num = int(interaction.loc[i, 'ID_number'])
+        date_df = pd.read_sql(query_read,
+                              con=connection,
+                              params={'id':id_num})
+        if date_df.iloc[0]['last_date'] < interaction.iloc[i]['contact_date']:
+            cursor.execute(query_write,
+                           (interaction.iloc[i]['contact_date'], id_num))
+            connection.commit()
+        else:
+            print(interaction.iloc[i]['contact_date'], 'is too old..')
+    connection.close()
+
+def _import_new_interaction(location, interaction):
+    # new_call = pd.read_csv(location)
+
+    interaction['contact_date'] = pd.to_datetime(interaction['contact_date']).dt.strftime('%Y-%m-%d')
+    connection = _db_connection()
+    interaction.to_sql('Contact_Events', connection, index=False,
                     if_exists='append')
     connection.close()
 
@@ -339,7 +401,7 @@ def _import_alumni(location):
         connection.commit()
         connection.close()
 
-    #initialize all the new alumni to the "Last_Contact" Table
+#initialize all the new alumni to the "Last_Contact" Table
         connection = _db_connection()
         query = ''' SELECT ID_number, first_name, last_name,
                            CORE_student, graduation_year

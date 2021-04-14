@@ -14,38 +14,27 @@ import uuid
 import PySimpleGUI as sg
 
 def main():
+    query_read = '''SELECT c.ID_number, c.first_name, c.last_name,
+                           c.CORE_student, c.last_date, b.phone_num, b.email
+                    FROM Last_Contact c
+                    INNER JOIN Basic_Info b
+                        ON c.ID_number = b.ID_number
+                    WHERE last_date < DATE('now', '-90 days')
+                    ORDER BY c.CORE_student DESC, c.last_date ASC
+                 '''
+
     connection = _db_connection()
-    query = ''' SELECT ID_number, first_name, last_name,
-                       CORE_student, graduation_year
-                FROM Basic_Info
-                ORDER BY last_name ASC
-              '''
-    output = pd.read_sql(query, con=connection)
-    connection.close()
-    col_names = ['ID_number',
-                 'first_name',
-                 'last_name',
-                 'CORE_student',
-                 'graduation_year']
-    output.columns = col_names
-    for i in output.index:
-        last_date = str(output.iloc[i,4])
-        last_date = last_date + '-06-01'
-        output.at[i, 'last_date'] = last_date
+    contact = pd.read_sql(query_read, con=connection)
+    col_names = ['ID Number',
+                 'First Name',
+                 'Last Name',
+                 'CORE?',
+                 'Last Contact Date',
+                 'Phone Number',
+                 'Email']
+    contact.columns = col_names
 
-    output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
-    output.drop(columns=['graduation_year'], inplace = True)
-    output = output[['ID_number',
-                     'last_name',
-                     'first_name',
-                     'CORE_student',
-                     'last_date']]
-    connection = _db_connection()
-    output.to_sql('Last_Contact', connection, index=False,
-                    if_exists='append')
-    connection.close()
-
-
+    print(contact.head())
 
 
 
