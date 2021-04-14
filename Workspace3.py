@@ -14,28 +14,26 @@ import uuid
 import PySimpleGUI as sg
 
 def main():
-    query_read = '''SELECT c.ID_number, c.first_name, c.last_name,
-                           c.CORE_student, c.last_date, b.phone_num, b.email
-                    FROM Last_Contact c
-                    INNER JOIN Basic_Info b
-                        ON c.ID_number = b.ID_number
-                    WHERE last_date < DATE('now', '-90 days')
-                    ORDER BY c.CORE_student DESC, c.last_date ASC
-                 '''
+    sg.theme('DarkBlue3')
 
-    connection = _db_connection()
-    contact = pd.read_sql(query_read, con=connection)
-    col_names = ['ID Number',
-                 'First Name',
-                 'Last Name',
-                 'CORE?',
-                 'Last Contact Date',
-                 'Phone Number',
-                 'Email']
-    contact.columns = col_names
+    layout_col = [[sg.Text('Please select an action that you would like to perform:',
+                           size=(30,3),
+                           font=('Courier', 15, 'bold'),
+                           justification='center')],
+                  [sg.Button('Close the program',
+                             key='close',
+                             size=(40,1))]]
 
-    print(contact.head())
+    layout = [[sg.Column(layout_col, element_justification='center')]]
 
+    window = sg.Window('UIF: Alumni Database', layout, size=(600, 400))
+
+    while True:
+        event = window.read()
+        if event[0] in ('close', sg.WIN_CLOSED):
+            break
+
+    window.close()
 
 
 

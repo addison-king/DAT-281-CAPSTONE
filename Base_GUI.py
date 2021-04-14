@@ -25,7 +25,7 @@ def main():
     None.
 
     """
-    _create_db_table()
+
     sg.theme('DarkBlue3')
 
     layout = [[sg.Text('Please select an action that you would like to perform:',
@@ -160,7 +160,7 @@ def _export_alumni_contact_list():
     path = _select_folder()
     os.chdir(path)
     contact.to_csv(file_name, index=False, encoding='utf-8')
-    _all_good
+    _all_good()
     
 
 def _new_alumni_gui():
@@ -435,77 +435,6 @@ def _import_alumni(location):
     else:
         print('Nothing to add.')
 
-def _create_db_table():
-    sql_table_basic = '''CREATE table IF NOT EXISTS Basic_Info (
-                        ID_number integer,
-                        last_name text,
-                        first_name text,
-                        CORE_student text,
-                        graduation_year integer,
-                        phone_num text,
-                        birthday text,
-                        gender text,
-                        address text,
-                        city text,
-                        state text,
-                        zipcode integer,
-                        email text,
-                        church text,
-                        highschool text,
-                        college text,
-                        job text,
-                        health_info text,
-                        parent_guardian text,
-                        parent_guardian_phone_num text,
-                        parent_guardian_email text,
-                        emergency_contact text,
-                        emergency_contact_phone_number text,
-                        OPTIONS text,
-                        education text,
-                        athletics text,
-                        performing_arts text
-                        )'''
-    sql_table_contact = '''CREATE table IF NOT EXISTS Contact_Events (
-                        ID_number integer,
-                        last_name text,
-                        first_name text,
-                        contact_date text,
-                        status text,
-                        need text,
-                        notes text
-                        )'''
-    sql_table_id = '''CREATE table IF NOT EXISTS Alumni_ID (
-                        ID_number integer PRIMARY KEY AUTOINCREMENT,
-                        last_name text,
-                        first_name text,
-                        birthday text
-                        )'''
-    sql_table_last_d = '''CREATE table IF NOT EXISTS Last_Contact (
-                            ID_number integer PRIMARY KEY AUTOINCREMENT,
-                            last_name text,
-                            first_name text,
-                            CORE_student text,
-                            last_date text
-
-                        )'''
-    sql_i_row = ''' INSERT INTO Alumni_ID (ID_number, last_name)
-                    VALUES (1000, 'Test')
-                    '''
-    sql_delete_i_row = '''  DELETE FROM Alumni_ID
-                            WHERE ID_number IS 1000 AND last_name IS 'Test'
-                            '''
-
-    connection = _db_connection()
-    cursor = connection.cursor()
-    cursor.execute(sql_table_basic)
-    cursor.execute(sql_table_contact)
-    cursor.execute(sql_table_id)
-    cursor.execute(sql_table_last_d)
-    cursor.execute(sql_i_row)
-    cursor.execute(sql_delete_i_row)
-    connection.commit()
-    connection.close()
-
 def _db_connection():
     '''
     Connects to the .db file
@@ -520,6 +449,7 @@ def _db_connection():
     except Error:
         print(Error)
     return connection
+
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(sys.argv[0]))
