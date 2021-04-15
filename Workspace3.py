@@ -14,25 +14,27 @@ import uuid
 import PySimpleGUI as sg
 
 def main():
-    sg.theme('DarkBlue3')
+    column_to_be_centered = [  [sg.Text('My Window')],
+                [sg.Input(key='-IN-')],
+                [sg.Text(size=(30,1), key='-OUT-')],
+                [sg.Button('Go'), sg.Button('Exit')]  ]
 
-    layout_col = [[sg.Text('Please select an action that you would like to perform:',
-                           size=(30,3),
-                           font=('Courier', 15, 'bold'),
-                           justification='center')],
-                  [sg.Button('Close the program',
-                             key='close',
-                             size=(40,1))]]
+    layout = [[sg.Text(key='-EXPAND-', font='ANY 1', pad=(0, 0))],  # the thing that expands from top
+              [sg.Text('', pad=(0,0),key='-EXPAND2-'),              # the thing that expands from left
+               sg.Column(column_to_be_centered, vertical_alignment='center', justification='center',  k='-C-')]]
 
-    layout = [[sg.Column(layout_col, element_justification='center')]]
+    window = sg.Window('Window Title', layout, resizable=True,finalize=True, size=(600,400))
+    window['-C-'].expand(True, True, True)
+    window['-EXPAND-'].expand(True, True, True)
+    window['-EXPAND2-'].expand(True, False, True)
 
-    window = sg.Window('UIF: Alumni Database', layout, size=(600, 400))
-
-    while True:
-        event = window.read()
-        if event[0] in ('close', sg.WIN_CLOSED):
+    while True:             # Event Loop
+        event, values = window.read()
+        print(event, values)
+        if event == sg.WIN_CLOSED or event == 'Exit':
             break
-
+        if event == 'Go':
+            window['-OUT-'].update(values['-IN-'])
     window.close()
 
 
