@@ -22,7 +22,7 @@ def _db_connection():
 
     '''
     try:
-        connection = sqlite3.connect('MOCK_Data\\MOCK_Data.db')
+        connection = sqlite3.connect('Data\\UIF_Alumni_DB.db')
     except Error:
         print(Error)
     return connection
@@ -99,5 +99,5 @@ def _create_db_table():
     connection.close()
     
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(sys.argv[0]))
+    # os.chdir(os.path.dirname(sys.argv[0]))
     main()
