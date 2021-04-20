@@ -44,7 +44,7 @@ def text_new_alumni_p1():
     frame_first_name = [[sg.Input(key='first')]]
 
     frame_core_student = [[sg.Radio('Yes', 'CORE', key='core_yes'),
-                          sg.Radio('No', 'CORE', key='core_no', default=True)]]
+                          sg.Radio('No', 'CORE', key='core_no')]]
 
     frame_grad_year = [[sg.Input(key='grad_year', size=(13,1),
                                  change_submits=True, do_not_clear=True),
@@ -116,7 +116,7 @@ def text_new_alumni_p2():
                          change_submits=True, do_not_clear=True),
                    sg.T('', key='error_bday', text_color='purple', size=(25,2))]]
 
-    frame_gender = [[sg.Radio('Female', 'gender', key='gender_female', default=True),
+    frame_gender = [[sg.Radio('Female', 'gender', key='gender_female'),
                      sg.Radio('Male', 'gender', key='gender_male')]]
 
     frame_street_ad = [[sg.In(key='street_address', size=(49,1))]]
