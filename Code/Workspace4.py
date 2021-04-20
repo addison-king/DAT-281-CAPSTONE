@@ -14,7 +14,21 @@ import uuid
 import PySimpleGUI as sg
 
 def main():
-    _db_connection()
+    print()
+    file = select_file()
+    print(file)
+    
+def select_file():    
+    layout = [[sg.Text('Folder Location')],
+          [sg.Input(), sg.FileBrowse()],
+          [sg.OK(), sg.Cancel()] ]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+    values = window.read()
+    window.close()
+    if values[1][0] == '':
+        print('here')
+    return values[1][0]
 
 
 

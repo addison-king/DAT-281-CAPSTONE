@@ -54,24 +54,62 @@ def main():
 
     while True:
         event = window.read()
+
         if event[0] == 'alum':
             window.close()
-            _new_alumni_gui()
+            main_alum()
+
         elif event[0] == 'interaction':
             window.close()
-            _new_interaction_gui()
+            main_interaction()
+
         elif event[0] == 'export_ID':
             window.close()
-            _export_alumni_name_list()
+            main_export_id()
+
         elif event[0] == 'contact':
             window.close()
-            _export_alumni_contact_list()
+            main_contact()
+
         elif event[0] in ('close', sg.WIN_CLOSED):
             break
 
     window.close()
 
-def _select_file():
+
+def main_alum():
+    location = select_file()
+    if location is not None:
+        new_alumni_gui(location)
+    else:
+        main()
+
+
+def main_interaction():
+    location = select_file()
+    if location is not None:
+        new_interaction_gui(location)
+    else:
+        main()
+
+
+def main_export_id():
+    location = select_folder()
+    if location is not None:
+        export_alumni_name_list(location)
+    else:
+        main()
+
+
+def main_contact():
+    location = select_folder()
+    if location is not None:
+        export_alumni_contact_list(location)
+    else:
+        main()
+
+
+def select_file():
     layout = [[sg.Text('Folder Location')],
               [sg.Input(), sg.FileBrowse()],
               [sg.OK(), sg.Cancel()] ]
@@ -79,9 +117,12 @@ def _select_file():
     window = sg.Window('UIF: Alumni Database', layout)
     values = window.read()
     window.close()
-    return values[1][0]
+    if values[1][0] != '':
+        return values[1][0]
+    return None
 
-def _select_folder():
+
+def select_folder():
     layout = [[sg.Text('Folder Location')],
               [sg.Input(), sg.FolderBrowse()],
               [sg.OK(), sg.Cancel()] ]
@@ -89,9 +130,12 @@ def _select_folder():
     window = sg.Window('UIF: Alumni Database', layout)
     values = window.read()
     window.close()
-    return values[1][0]
+    if values[1][0] != '':
+        return values[1][0]
+    return None
 
-def _all_good():
+
+def all_good():
     layout = [[sg.Text('Everything completed without errors.',
                font=('Arial', 15))],
               [sg.Button('Exit the program', key='close')]]
@@ -102,7 +146,8 @@ def _all_good():
             break
     window.close()
 
-def _export_alumni_name_list():
+
+def export_alumni_name_list(path):
     """
     Opens a connection to the database.
     Queries the database.
@@ -131,12 +176,13 @@ def _export_alumni_name_list():
                  'CORE?']
     output.columns = col_names
     file_name = 'Master Alumni List.csv'
-    path = _select_folder()
+    # path = select_folder()
     os.chdir(path)
     output.to_csv(file_name, index=False, encoding='utf-8')
-    _all_good()
+    all_good()
 
-def _export_alumni_contact_list():
+
+def export_alumni_contact_list(path):
     query_read = '''SELECT c.ID_number, c.first_name, c.last_name,
                            c.CORE_student, c.last_date, b.phone_num, b.email
                     FROM Last_Contact c
@@ -158,15 +204,15 @@ def _export_alumni_contact_list():
                  'Email']
     contact.columns = col_names
     file_name = 'Alumni to Contact.csv'
-    path = _select_folder()
+    # path = select_folder()
     os.chdir(path)
     contact.to_csv(file_name, index=False, encoding='utf-8')
-    _all_good()
+    all_good()
 
 
-def _new_alumni_gui():
-    location = _select_file()
+def new_alumni_gui(location):
     alumni_display = pd.read_csv(location)
+
     display_cols = ['Last Name',
                  'First Name',
                  'Graduation Year']
@@ -189,8 +235,8 @@ def _new_alumni_gui():
         event = window.read()
         if event[0] == 'import':
             window.close()
-            _import_alumni(location)
-            _all_good()
+            import_alumni_p1(location)
+            all_good()
         elif event[0] == 'main':
             window.close()
             main()
@@ -202,8 +248,8 @@ def _new_alumni_gui():
     window.close()
 
 
-def _new_interaction_gui():
-    location = _select_file()
+def new_interaction_gui(location):
+
     interaction = pd.read_csv(location)
     col_names = ['ID_number',
                  'first_name',
@@ -238,17 +284,18 @@ def _new_interaction_gui():
         event = window.read()
         if event[0] == 'import':
             window.close()
-            _import_new_interaction(location, interaction)
-            _update_last_contact(location, interaction)
+            import_new_interaction(interaction)
+            update_last_contact(interaction)
         elif event[0] == 'main':
             window.close()
             main()
         elif event[0] in ('cancel', sg.WIN_CLOSED):
             break
     window.close()
-    _all_good()
+    all_good()
 
-def _update_last_contact(location, interaction):
+
+def update_last_contact(interaction):
     query_read = '''SELECT ID_number, last_date
                  FROM Last_Contact
                  WHERE ID_number = :id
@@ -272,8 +319,8 @@ def _update_last_contact(location, interaction):
             print(interaction.iloc[i]['contact_date'], 'is too old..')
     connection.close()
 
-def _import_new_interaction(location, interaction):
 
+def import_new_interaction(interaction):
 
     interaction['contact_date'] = pd.to_datetime(interaction['contact_date']).dt.strftime('%Y-%m-%d')
     connection = _db_connection()
@@ -281,25 +328,8 @@ def _import_new_interaction(location, interaction):
                     if_exists='append')
     connection.close()
 
-def _import_alumni(location):
-    """
-    Reads in .csv with new alumni data.
-    Drops the Timestamp col (generated from google forms).
-    Renames the columns to match the database.
-    Changes the case to titlecase for these cols: address, city, state,
-                       church, highschool, college, job
-    Checks to make sure the alumni doesn't already exist.
-    Adds all new alumni to database where an ID number is assigned.
-    Retrieves the new ID number, adds it to the dataframe.
-    Then the dataframe containing all pertinent info is added to the database.
-    Finally, each new alumni is initialized in the Last_Contact table where
-        'last_date' is given a starting date of June 1, (grad year).
 
-    Returns
-    -------
-    None.
-
-    """
+def import_alumni_p1(location):
 
     alumni = pd.read_csv(location)
     alumni.drop('Timestamp', axis=1, inplace=True)
@@ -370,7 +400,9 @@ def _import_alumni(location):
             alumni = alumni.drop(i)
     connection.commit()
     connection.close()
+    import_alumni_p2(alumni)
 
+def import_alumni_p2(alumni):
 #import alumni now that IDs have been assigned
     if len(alumni) != 0:
         query_2 = ''' SELECT ID_number
@@ -402,40 +434,43 @@ def _import_alumni(location):
 
         connection.commit()
         connection.close()
-
-#initialize all the new alumni to the "Last_Contact" Table
-        connection = _db_connection()
-        query = ''' SELECT ID_number, first_name, last_name,
-                           CORE_student, graduation_year
-                    FROM Basic_Info
-                    ORDER BY last_name ASC
-                  '''
-        output = pd.read_sql(query, con=connection)
-        connection.close()
-        col_names = ['ID_number',
-                     'first_name',
-                     'last_name',
-                     'CORE_student',
-                     'graduation_year']
-        output.columns = col_names
-        for i in output.index:
-            last_date = str(output.iloc[i,4])
-            last_date = last_date + '-06-01'
-            output.at[i, 'last_date'] = last_date
-
-        output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
-        output.drop(columns=['graduation_year'], inplace = True)
-        output = output[['ID_number',
-                         'last_name',
-                         'first_name',
-                         'CORE_student',
-                         'last_date']]
-        connection = _db_connection()
-        output.to_sql('Last_Contact', connection, index=False,
-                        if_exists='append')
-        connection.close()
+        import_alumni_p3()
     else:
         print('Nothing to add.')
+
+def import_alumni_p3():
+
+#initialize all the new alumni to the "Last_Contact" Table
+    connection = _db_connection()
+    query = ''' SELECT ID_number, first_name, last_name,
+                       CORE_student, graduation_year
+                FROM Basic_Info
+                ORDER BY last_name ASC
+              '''
+    output = pd.read_sql(query, con=connection)
+    connection.close()
+    col_names = ['ID_number',
+                 'first_name',
+                 'last_name',
+                 'CORE_student',
+                 'graduation_year']
+    output.columns = col_names
+    for i in output.index:
+        last_date = str(output.iloc[i,4])
+        last_date = last_date + '-06-01'
+        output.at[i, 'last_date'] = last_date
+
+    output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
+    output.drop(columns=['graduation_year'], inplace = True)
+    output = output[['ID_number',
+                     'last_name',
+                     'first_name',
+                     'CORE_student',
+                     'last_date']]
+    connection = _db_connection()
+    output.to_sql('Last_Contact', connection, index=False,
+                    if_exists='append')
+    connection.close()
 
 def _db_connection():
     '''

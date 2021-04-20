@@ -22,7 +22,7 @@ def _db_connection():
 
     '''
     try:
-        connection = sqlite3.connect('Data\\UIF_Alumni_DB.db')
+        connection = sqlite3.connect('Data\\Clean_db\\UIF_Alumni_DB.db')
     except Error:
         print(Error)
     return connection
