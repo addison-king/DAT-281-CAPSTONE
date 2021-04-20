@@ -18,4 +18,5 @@ while True:             # Event Loop
     event, values = window.Read()
     if event is None:
         break
+    print(event)
     window['_TEXT_'].Update(values['_INPUT_']) #updats the value of _TEXT_ to be _INPUT_
