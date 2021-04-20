@@ -26,7 +26,7 @@ def main():
 
     """
     os.chdir(os.path.dirname(sys.argv[0]))
-    
+
     sg.theme('DarkBlue3')
 
     layout = [[sg.Text('Please select an action that you would like to perform:',
@@ -162,7 +162,7 @@ def _export_alumni_contact_list():
     os.chdir(path)
     contact.to_csv(file_name, index=False, encoding='utf-8')
     _all_good()
-    
+
 
 def _new_alumni_gui():
     location = _select_file()
@@ -273,7 +273,7 @@ def _update_last_contact(location, interaction):
     connection.close()
 
 def _import_new_interaction(location, interaction):
-    # new_call = pd.read_csv(location)
+
 
     interaction['contact_date'] = pd.to_datetime(interaction['contact_date']).dt.strftime('%Y-%m-%d')
     connection = _db_connection()
