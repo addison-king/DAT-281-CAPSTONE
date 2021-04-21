@@ -6,7 +6,6 @@ Final Project for CCAC DAT-281
 @author: BKG
 """
 
-# from pathlib import Path
 import os
 import sys
 import sqlite3

@@ -25,7 +25,7 @@ def text_new_alumni_p2():
                              change_submits=True, do_not_clear=True),
                        sg.T('', key='error_bday', text_color='purple', size=(25,2))]]
 
-    frame_gender = [[sg.Radio('Female', 'gender', key='gender_female', default=True),
+    frame_gender = [[sg.Radio('Female', 'gender', key='gender_female'),
                      sg.Radio('Male', 'gender', key='gender_male')]]
 
     frame_street_ad = [[sg.In(key='street_address', size=(49,1))]]
@@ -42,6 +42,7 @@ def text_new_alumni_p2():
                             change_submits=True, do_not_clear=True),
                       sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
 
+    frame_missing_val = [[sg.T('', key='main_error', text_color='white', size=(43,1))]]
 
     layout = [[sg.T('New Alumni - Page 2')],
               [sg.Frame('Birthday (mm-dd-yyyy)', frame_birthday)],
@@ -50,16 +51,32 @@ def text_new_alumni_p2():
               [sg.Frame('City', frame_city)],
               [sg.Frame('State', frame_state)],
               [sg.Frame('Zipcode', frame_zipcode)],
+              [sg.Frame('Error Checking', frame_missing_val)],
               [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel()],
               ]
 
     window = sg.Window('UIF: Alumni Database', layout)
+    
 
     while True:
         event, values = window.read()
 
         if event in ('Cancel', sg.WIN_CLOSED):
+            window.close()
             break
+        if event == 'next_page':
+            if sum([values['gender_male'], values['gender_female']]) == 0:
+                    window['main_error'].Update('Please select a Gender')
+                    window['main_error'].Widget.config(background='red')
+            elif sum([values['gender_male'], values['gender_female']]) != 0:
+                    window['main_error'].Update('')
+                    window['main_error'].Widget.config(background='#64778D')
+                    break
+            
+                
+                
+            
+            
         if event in ('bday_month', 'bday_day', 'bday_year', 'zipcode'):
             window[event].Update(re.sub("[^0-9]", "", values[event]))
 
