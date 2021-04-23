@@ -88,6 +88,7 @@ def format_df(df):
                        'options': 'OPTIONS',
                        'arts': 'performing_arts'
                        }, inplace=True)
+    
     df = df[['last_name', 'first_name', 'CORE_student', 'graduation_year',
              'phone_num', 'birthday', 'gender', 'address', 'city', 'state',
              'zipcode', 'email', 'church', 'highschool', 'college', 'job',
@@ -95,6 +96,22 @@ def format_df(df):
              'parent_guardian_email', 'emergency_contact',
              'emergency_contact_phone_number', 'OPTIONS', 'education',
              'athletics', 'performing_arts']]
+    
+    df = df.fillna('None')
+    
+    title_case_list = ['address',
+                       'city',
+                       'state',
+                       'church',
+                       'highschool',
+                       'college',
+                       'job']
+    
+    for i in title_case_list:
+        df[i] = df[i].str.title()
+        
+    df['birthday'] = pd.to_datetime(df['birthday']).dt.strftime('%Y-%m-%d')
+        
     return df
 
 def clean_page_1(values):
@@ -157,9 +174,9 @@ def clean_page_2(values):
         
     
     if not '' in (values['bday_month'],values['bday_day'],values['bday_year']):
-        birthday = (values['bday_month'] + '-' +
-                    values['bday_day'] + '-' +
-                    values['bday_year'])
+        birthday = (values['bday_year'] + '-' +
+                    values['bday_month'] + '-' +
+                    values['bday_day'])
     else:
         birthday = ''
         
@@ -404,7 +421,7 @@ def text_new_alumni_p2():
                                text_color='white', size=(43,1))]]   
 
     layout = [[sg.T('New Alumni - Page 2')],
-              [sg.Frame('Birthday (mm-dd-yyyy)', frame_birthday)],
+              [sg.Frame('Birthday (mm-dd-yyyy) *', frame_birthday)],
               [sg.Frame('Gender *', frame_gender)],
               [sg.Frame('Street Address', frame_street_ad)],
               [sg.Frame('City *', frame_city)],
@@ -425,12 +442,9 @@ def text_new_alumni_p2():
             break
         if event == 'next_page':
 #Birthday field must be empty or mm-dd-yyyy
-            if ((sum([len(values['bday_month']),
-                       len(values['bday_day']),
-                       len(values['bday_year'])]) != 0) and
-                 (len(values['bday_month']) !=2 or 
+            if (len(values['bday_month']) !=2 or 
                   len(values['bday_day']) !=2 or 
-                  len(values['bday_year']) !=4)):
+                  len(values['bday_year']) !=4):
                     window['main_error'].Update('Please complete the Birthday')
                     window['main_error'].Widget.config(background='red')
 #Gender field must have 1 option selected
@@ -444,12 +458,9 @@ def text_new_alumni_p2():
 #All conditions met, break, move to next page
             elif (len(values['zipcode']) == 5 and
                   sum([values['gender_male'], values['gender_female']]) != 0 and
-                 (sum([len(values['bday_month']),
-                       len(values['bday_day']),
-                       len(values['bday_year'])]) == 0 or
                 (len(values['bday_month']) ==2 or 
                  len(values['bday_day']) ==2 or 
-                 len(values['bday_year']) ==4))):
+                 len(values['bday_year']) ==4)):
                         window['main_error'].Update('')
                         window['main_error'].Widget.config(background='#64778D')
                         break

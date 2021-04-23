@@ -4,8 +4,7 @@ Created on Wed Apr 14 13:52:01 2021
 
 @author: BKG
 """
-import os
-import sys
+
 import sqlite3
 from sqlite3 import Error
 
