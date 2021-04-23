@@ -274,7 +274,8 @@ def text_new_alumni_p1():
           [sg.Frame('Phone Number', frame_phone_number)],
           [sg.Frame('Email', frame_email)],
           [sg.Frame('Error Checking', frame_missing_val)],
-          [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel()] ]
+          [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel(),
+           sg.T('* Required', text_color='red')] ]
 
     window = sg.Window('UIF: Alumni Database', layout)
     while True:
@@ -285,15 +286,19 @@ def text_new_alumni_p1():
             break
 
         if event == 'next_page':
+#first name cannot be empty
             if len(values['first']) == 0:
                     window['main_error'].Update('Please input a First Name')
-                    window['main_error'].Widget.config(background='red')            
+                    window['main_error'].Widget.config(background='red')  
+#last name cannot be empty
             elif len(values['last']) == 0:
                     window['main_error'].Update('Please input a Last Name')
                     window['main_error'].Widget.config(background='red')
+#graduation year must be 4 digits
             elif len(values['grad_year']) != 4:
                     window['main_error'].Update('Please input a Graduation Year')
                     window['main_error'].Widget.config(background='red')
+#phone number must be empty OR ###-###-####
             elif ((sum([len(values['phone1']),
                        len(values['phone2']),
                        len(values['phone3'])]) != 0) and
@@ -302,7 +307,7 @@ def text_new_alumni_p1():
                   len(values['phone3']) !=4)):
                     window['main_error'].Update('Please complete the Phone Number')
                     window['main_error'].Widget.config(background='red')
-                
+#No errors, break, continue to next page  
             elif (sum([len(values['last']), 
                        len(values['first'])]) >= 2 and
                   len(values['grad_year']) == 4 and 
@@ -364,6 +369,8 @@ def text_new_alumni_p2():
                             change_submits=True, do_not_clear=True),
                       sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
 
+    frame_missing_val = [[sg.T('', key='main_error', 
+                               text_color='white', size=(43,1))]]   
 
     layout = [[sg.T('New Alumni - Page 2')],
               [sg.Frame('Birthday (mm-dd-yyyy)', frame_birthday)],
@@ -372,6 +379,7 @@ def text_new_alumni_p2():
               [sg.Frame('City', frame_city)],
               [sg.Frame('State', frame_state)],
               [sg.Frame('Zipcode', frame_zipcode)],
+              [sg.Frame('Error Checking', frame_missing_val)],
               [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel()],
               ]
 
@@ -384,8 +392,36 @@ def text_new_alumni_p2():
             values = None
             break
         if event == 'next_page':
-            break
-
+#Birthday field must be empty or mm-dd-yyyy
+            if ((sum([len(values['bday_month']),
+                       len(values['bday_day']),
+                       len(values['bday_year'])]) != 0) and
+                 (len(values['bday_month']) !=2 or 
+                  len(values['bday_day']) !=2 or 
+                  len(values['bday_year']) !=4)):
+                    window['main_error'].Update('Please complete the Birthday')
+                    window['main_error'].Widget.config(background='red')
+#Gender field must have 1 option selected
+            elif sum([values['gender_male'], values['gender_female']]) == 0:
+                    window['main_error'].Update('Please select a Gender')
+                    window['main_error'].Widget.config(background='red')
+#Zipcode must be a 5-digit number    
+            elif len(values['zipcode']) != 5:
+                window['main_error'].Update('Please input a 5-digit Zipcode')
+                window['main_error'].Widget.config(background='red')  
+#All conditions met, break, move to next page
+            elif (len(values['zipcode']) == 5 and
+                  sum([values['gender_male'], values['gender_female']]) != 0 and
+                 (sum([len(values['bday_month']),
+                       len(values['bday_day']),
+                       len(values['bday_year'])]) == 0 or
+                (len(values['bday_month']) ==2 or 
+                 len(values['bday_day']) ==2 or 
+                 len(values['bday_year']) ==4))):
+                        window['main_error'].Update('')
+                        window['main_error'].Widget.config(background='#64778D')
+                        break
+            
         if event == 'city_other':
             window['city_input'].SetFocus()
         if event == 'state_other':
@@ -447,6 +483,9 @@ def text_new_alumni_p3():
     frame_job = [[sg.In(key='job', size=(55,1))]]
 
     frame_health = [[sg.In(key='health', size=(55,1))]]
+    
+    frame_missing_val = [[sg.T('', key='main_error', 
+                               text_color='white', size=(43,1))]]
 
 
     layout = [[sg.T('New Alumni - Page 3')],
@@ -455,6 +494,7 @@ def text_new_alumni_p3():
               [sg.Frame('College', frame_college)],
               [sg.Frame('Occupation', frame_job)],
               [sg.Frame('Special Health Concerns', frame_health)],
+              [sg.Frame('Error Checking', frame_missing_val)],
               [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel()],
               ]
 
@@ -467,7 +507,22 @@ def text_new_alumni_p3():
             values = None
             break
         if event == 'next_page':
-            break
+#One of the church options must be selected
+            if sum([values['church_acac'], values['church_none'],
+                    values['church_other']]) == 0:
+                window['main_error'].Update('Please select a church affiliation')
+                window['main_error'].Widget.config(background='red')
+#If 'Other' church option, then the field must be filled in
+            elif (values['church_other'] == True and 
+                 len(values['church']) == 0):
+                 window['main_error'].Update('Please complete the \'Other\' church field.')
+                 window['main_error'].Widget.config(background='red')
+#All conditions met, break, go to next page
+            elif (sum([values['church_acac'], values['church_none']]) != 0 or
+                 (values['church_other'] == True and len(values['church']) != 0)):
+                        window['main_error'].Update('')
+                        window['main_error'].Widget.config(background='#64778D')   
+                        break
 
         if event in ('church_acac', 'church_none'):
             window['highschool'].SetFocus()
@@ -506,6 +561,8 @@ def text_new_alumni_p4():
                              [sg.Checkbox('Use Parent/Guardian phone number from above',
                                           key='e_number',
                                           enable_events=True)]]
+    frame_missing_val = [[sg.T('', key='main_error', 
+                               text_color='white', size=(43,1))]]
 
     layout = [[sg.T('New Alumni - Page 4')],
               [sg.Frame('Parent/Guardian Full Name', frame_parent)],
@@ -513,6 +570,7 @@ def text_new_alumni_p4():
               [sg.Frame('Parent/Guardian Email', frame_parent_email)],
               [sg.Frame('Emergency Contact Full Name', frame_emergency_contact)],
               [sg.Frame('Emergency Contact Phone Number', frame_emergency_phone)],
+              [sg.Frame('Error Checking', frame_missing_val)],
               [sg.Button('Next Page', key='next_page', size=(15,1)), sg.Cancel()],
               ]
 
@@ -525,8 +583,37 @@ def text_new_alumni_p4():
             values = None
             break
         if event == 'next_page':
-            break
-
+#Parent Phone Number must be either empty or ###-###-####
+            if ((sum([len(values['parent_phone1']),
+                       len(values['parent_phone2']),
+                       len(values['parent_phone3'])]) != 0) and
+                 (len(values['parent_phone1']) !=3 or 
+                  len(values['parent_phone2']) !=3 or 
+                  len(values['parent_phone3']) !=4)):
+                    window['main_error'].Update(
+                        'Please complete the Parent/ Guardian Phone Number')
+                    window['main_error'].Widget.config(background='red')
+#Emergency Phone Number must be either empty or ###-###-####
+            elif ((sum([len(values['e_phone1']),
+                       len(values['e_phone2']),
+                       len(values['e_phone3'])]) != 0) and
+                 (len(values['e_phone1']) !=3 or 
+                  len(values['e_phone2']) !=3 or 
+                  len(values['e_phone3']) !=4)):
+                    window['main_error'].Update(
+                        'Please complete the Emergency Contact Phone Number')
+                    window['main_error'].Widget.config(background='red')
+#When all conditions met, break, move to next page
+            elif (sum([len(values['parent_phone1']),
+                       len(values['parent_phone2']),
+                       len(values['parent_phone3'])]) in [0,10] and
+                  sum([len(values['e_phone1']),
+                       len(values['e_phone2']),
+                       len(values['e_phone3'])]) in [0,10]):
+                        window['main_error'].Update('')
+                        window['main_error'].Widget.config(background='#64778D')  
+                        break
+            
         if event in ('parent_phone1', 'parent_phone2', 'parent_phone3',
                      'e_phone1', 'e_phone2', 'e_phone3'):
             window[event].Update(re.sub("[^0-9]", "", values[event]))
@@ -567,6 +654,9 @@ def text_new_alumni_p5():
 
     frame_arts = [[sg.Radio('Yes', 'arts', key='arts_yes'),
                     sg.Radio('No', 'arts', key='arts_no')]]
+    
+    frame_missing_val = [[sg.T('', key='main_error', 
+                               text_color='white', size=(43,1))]]
 
 
     layout = [[sg.T('New Alumni - Page 5')],
@@ -574,6 +664,7 @@ def text_new_alumni_p5():
               [sg.Frame('Education?', frame_education)],
               [sg.Frame('Athletics?', frame_athletics)],
               [sg.Frame('Performing Arts?', frame_arts)],
+              [sg.Frame('Error Checking', frame_missing_val)],
               [sg.Button('Finish', key='finish', size=(15,1)), sg.Cancel()],
               ]
 
@@ -586,11 +677,27 @@ def text_new_alumni_p5():
             values = None
             break
         if event == 'finish':
-            break
+#Each option must have a choice selected
+            if sum([values['options_yes'], values['options_no'],
+                    values['education_yes'], values['education_no'],
+                    values['athletics_yes'], values['athletics_no'],
+                    values['arts_yes'], values['arts_no']]) in [0,1,2,3]:
+                        window['main_error'].Update(
+                            'Please select one option for each field above')
+                        window['main_error'].Widget.config(background='red')
+#When all conditions met, break, complete import
+            elif    sum([values['options_yes'], values['options_no'],
+                         values['education_yes'], values['education_no'],
+                         values['athletics_yes'], values['athletics_no'],
+                         values['arts_yes'], values['arts_no']]) == 4:
+                            window['main_error'].Update('')
+                            window['main_error'].Widget.config(background='#64778D') 
+                            break
 
     window.close()
 
     return values
+
 
 def _db_connection():
     '''
