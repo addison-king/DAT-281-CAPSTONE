@@ -213,8 +213,8 @@ def new_alumni_gui(location):
     alumni_display = pd.read_csv(location)
 
     display_cols = ['Last Name',
-                 'First Name',
-                 'Graduation Year']
+                    'First Name',
+                    'Graduation Year']
     alumni_display = alumni_display[display_cols]
     data = alumni_display.values.tolist()
     header_list = alumni_display.columns.tolist()

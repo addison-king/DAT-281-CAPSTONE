@@ -56,8 +56,11 @@ def main():
         for i in alumni:
             print(i, '-', alumni[i][0])
         
+        return alumni
+        
     else:
         print('None value. Quitting..')
+        return None
         
 
 
