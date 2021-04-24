@@ -164,13 +164,13 @@ def initialize_last_contact():
 
     """
 #Prepare a query for the db
-    query = ''' SELECT ID_number, first_name, last_name,
+    query_read = '''SELECT ID_number, first_name, last_name,
                        CORE_student, graduation_year
                 FROM Basic_Info
                 ORDER BY last_name ASC
               '''
     connection = _db_connection()          
-    output = pd.read_sql(query, con=connection) #df from the db using 'query'
+    output = pd.read_sql(query_read, con=connection) #df from the db using 'query'
     connection.close()
     
     col_names = ['ID_number',
@@ -193,6 +193,9 @@ def initialize_last_contact():
                      'first_name',
                      'CORE_student',
                      'last_date']]
+    
+    print(output)
+    input()
     
     connection = _db_connection() #establish connection to db
     output.to_sql('Last_Contact', connection, index=False,
