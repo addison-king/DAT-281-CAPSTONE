@@ -15,6 +15,7 @@ import pandas as pd
 import PySimpleGUI as sg
 
 import create_alumni_manually #GUI where the user inputs information about an alum
+import create_new_interaction
 import alumni_to_db
 import export_name_list
 import export_call_list
@@ -65,11 +66,9 @@ def main():
             window.close()
             main_add_alum()
 
-# =============================================================================
-#         elif event[0] == 'interaction':
-#             window.close()
-#             main_interaction()
-# =============================================================================
+        elif event[0] == 'interaction':
+            window.close()
+            main_new_interaction()
 
         elif event[0] == 'export_ID':
             window.close()
@@ -83,11 +82,11 @@ def main():
             break
 
     window.close()
-   
-    
+
+
 def main_add_alum():
 #GUI which the user enters new alum data.
-    alumni_df = create_alumni_manually.main() 
+    alumni_df = create_alumni_manually.main()
 #If the user selected 'Cancel' then it returns None and 'else' goes to main.
     if isinstance(alumni_df, pd.DataFrame):
         alumni_to_db.main(alumni_df)
@@ -96,8 +95,15 @@ def main_add_alum():
     else:
         print('none value here')
         main()
-   
-    
+
+
+def main_new_interaction():
+    interaction = create_new_interaction.main()
+
+    if isinstance(interaction, pd.DataFrame):
+        ##CREATE NEW .py file where the interaction is written to the database.
+        print()
+
 def main_export_id():
     location = select_folder()
     if location is not None:
@@ -106,7 +112,7 @@ def main_export_id():
         main()
     else:
         main()
-        
+
 
 def main_export_contact():
     location = select_folder()
@@ -116,8 +122,8 @@ def main_export_contact():
         main()
     else:
         main()
-        
-        
+
+
 def select_folder():
     layout = [[sg.Text('Folder Location')],
               [sg.Input(), sg.FolderBrowse()],
@@ -129,7 +135,7 @@ def select_folder():
     if values[1][0] != '':
         return values[1][0]
     return None
-    
+
 
 def all_good():
     layout = [[sg.Text('Everything completed without errors.',
@@ -141,7 +147,7 @@ def all_good():
         if event[0] in ('close', sg.WIN_CLOSED):
             break
     window.close()
-    
+
 
 def _db_connection():
     '''
