@@ -340,14 +340,17 @@ def text_new_alumni_p1():
             if len(values['first']) == 0:
                     window['main_error'].Update('Please input a First Name')
                     window['main_error'].Widget.config(background='red')  
+                    window['first'].SetFocus()
 #last name cannot be empty
             elif len(values['last']) == 0:
                     window['main_error'].Update('Please input a Last Name')
                     window['main_error'].Widget.config(background='red')
+                    window['last'].SetFocus()
 #graduation year must be 4 digits
             elif len(values['grad_year']) != 4:
                     window['main_error'].Update('Please input a Graduation Year')
                     window['main_error'].Widget.config(background='red')
+                    window['grad_year'].SetFocus()
 #phone number must be empty OR ###-###-####
             elif ((sum([len(values['phone1']),
                        len(values['phone2']),
@@ -563,6 +566,7 @@ def text_new_alumni_p3():
                  len(values['church_input']) == 0):
                  window['main_error'].Update('Please complete the \'Other\' church field.')
                  window['main_error'].Widget.config(background='red')
+                 window['church_input'].SetFocus()
 #All conditions met, break, go to next page
             elif (sum([values['church_acac'], values['church_none']]) != 0 or
                  (values['church_other'] == True and len(values['church_input']) != 0)):
