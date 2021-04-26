@@ -6,5 +6,7 @@ __pycache__/
 build/
 dist/
 *.spec
-.pylint.?/
+.pylint.d/
+.d
+.d/
 
