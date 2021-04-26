@@ -99,7 +99,9 @@ def format_df(df):
     
     df = df.fillna('None')
     
-    title_case_list = ['address',
+    title_case_list = ['last_name',
+                       'first_name'
+                       'address',
                        'city',
                        'state',
                        'church',

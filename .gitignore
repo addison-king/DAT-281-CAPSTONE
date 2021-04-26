@@ -3,3 +3,6 @@ UIF_Data/
 UIF_Alumni.db
 .spyproject/
 __pycache__/
+build/
+dist/
+*.spec

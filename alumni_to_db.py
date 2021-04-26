@@ -28,9 +28,7 @@ def main(df):
     None.
 
     """
-    print('------------------------------------------------')
-    print(df)
-    input('Pause 1...')
+
     df = id_assign(df)
     write_info(df)
     return
@@ -74,9 +72,6 @@ def id_assign(df):
                                     'bday': bday},
                             con=connection)
         
-        print('------------------------------------------------')
-        print(sq_df)
-        input('Pause 2...DataFrame should be empty')
         
         if len(sq_df) == 0:
             data = [[last_name, first_name, bday]] #list of values
@@ -116,9 +111,7 @@ def write_info(df):
     None.
 
     """
-    print('------------------------------------------------')
-    print(df)
-    input('Pause 3...Dataframe should be normal info')
+
 #When the df is not empty...
     if len(df) != 0:
 #Prepare a query for the db, looking to retrieve the ID_number value
@@ -141,9 +134,7 @@ def write_info(df):
                                             'first': first_name,
                                             'bday': bday},
                                 con=connection)
-            print('------------------------------------------------')
-            print(sql_df)
-            input('Pause 4...Should be an ID number df')
+
 #If the query returns not 1 entry, then an error is thrown
             if len(sql_df) == 1:
                 alum_num = int(sql_df.loc[0,'ID_number']) #get the id number
@@ -215,9 +206,6 @@ def initialize_last_contact(df):
                          'first_name',
                          'CORE_student',
                          'last_date']]
-        print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print(output)
-        input('Pause 5: Single row df to write to db')
     
         connection = _db_connection() #establish connection to db
         output.to_sql('Last_Contact', connection, index=False,
