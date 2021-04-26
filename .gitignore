@@ -9,4 +9,6 @@ dist/
 .pylint.d/
 .d
 .d/
+.stats
+.pylint/
 
