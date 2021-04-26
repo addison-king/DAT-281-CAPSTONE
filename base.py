@@ -14,11 +14,12 @@ from sqlite3 import Error
 import pandas as pd
 import PySimpleGUI as sg
 
-import create_alumni_manually #GUI where the user inputs information about an alum
-import create_new_interaction
-import alumni_to_db
-import export_name_list
-import export_call_list
+import create_new_alumni #GUI where the user inputs information about an alum
+import create_new_interaction #GUI where the user inputs a new alumni interaction
+import alumni_to_db #writes a new alumni to the db
+import interaction_to_db #writes a new alumni interaction to the db
+import export_name_list #exports a .csv file with full list of names from db
+import export_call_list #exports a .csv file with a list of alumni to contact next
 
 
 def main():
@@ -42,7 +43,7 @@ def main():
           [sg.Button('Create a new alumni for the database',
                      key='alum',
                      size=(30,1))],
-          [sg.Button('Import new interaction with alumni',
+          [sg.Button('Create a new interaction with alumni',
                      key='interaction',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
@@ -86,7 +87,7 @@ def main():
 
 def main_add_alum():
 #GUI which the user enters new alum data.
-    alumni_df = create_alumni_manually.main()
+    alumni_df = create_new_alumni.main()
 #If the user selected 'Cancel' then it returns None and 'else' goes to main.
     if isinstance(alumni_df, pd.DataFrame):
         alumni_to_db.main(alumni_df)
@@ -101,8 +102,11 @@ def main_new_interaction():
     interaction = create_new_interaction.main()
 
     if isinstance(interaction, pd.DataFrame):
-        ##CREATE NEW .py file where the interaction is written to the database.
-        print()
+        interaction_to_db.main(interaction)
+        all_good()
+        main()
+    else:
+        main()
 
 def main_export_id():
     location = select_folder()
@@ -125,7 +129,7 @@ def main_export_contact():
 
 
 def select_folder():
-    layout = [[sg.Text('Folder Location')],
+    layout = [[sg.Text('Select a folder where the file will be saved:')],
               [sg.Input(), sg.FolderBrowse()],
               [sg.OK(), sg.Cancel()] ]
 
@@ -140,7 +144,7 @@ def select_folder():
 def all_good():
     layout = [[sg.Text('Everything completed without errors.',
                font=('Arial', 15))],
-              [sg.Button('Exit the program', key='close')]]
+              [sg.Button('Return to Main Menu', key='close')]]
     window = sg.Window('UIF: Alumni Database', layout)
     while True:
         event = window.read()

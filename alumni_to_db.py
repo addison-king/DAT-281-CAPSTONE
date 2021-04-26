@@ -28,6 +28,9 @@ def main(df):
     None.
 
     """
+    print('------------------------------------------------')
+    print(df)
+    input('Pause 1...')
     df = id_assign(df)
     write_info(df)
     return
@@ -70,7 +73,11 @@ def id_assign(df):
                                     'first': first_name,
                                     'bday': bday},
                             con=connection)
-    
+        
+        print('------------------------------------------------')
+        print(sq_df)
+        input('Pause 2...DataFrame should be empty')
+        
         if len(sq_df) == 0:
             data = [[last_name, first_name, bday]] #list of values
             add_alumni = pd.DataFrame(data, columns = ['last_name', #new df for db
@@ -109,6 +116,9 @@ def write_info(df):
     None.
 
     """
+    print('------------------------------------------------')
+    print(df)
+    input('Pause 3...Dataframe should be normal info')
 #When the df is not empty...
     if len(df) != 0:
 #Prepare a query for the db, looking to retrieve the ID_number value
@@ -131,6 +141,9 @@ def write_info(df):
                                             'first': first_name,
                                             'bday': bday},
                                 con=connection)
+            print('------------------------------------------------')
+            print(sql_df)
+            input('Pause 4...Should be an ID number df')
 #If the query returns not 1 entry, then an error is thrown
             if len(sql_df) == 1:
                 alum_num = int(sql_df.loc[0,'ID_number']) #get the id number
@@ -142,7 +155,7 @@ def write_info(df):
                               if_exists='append') #write to the db table Basic_Info
                 connection.commit()
                 connection.close()
-                initialize_last_contact() #call function
+                initialize_last_contact(df) #call function
             else:
                 print('DF error. length of:', len(sql_df))
                 connection.commit()
@@ -152,7 +165,7 @@ def write_info(df):
         print('Nothing to add.')
     
 
-def initialize_last_contact():
+def initialize_last_contact(df):
     """
     Every alumni has a 'last contact date' of June 1, (grad_year). This is so
         that each alumni shows up on a list of alumni needed to be contacted.
@@ -166,41 +179,50 @@ def initialize_last_contact():
 #Prepare a query for the db
     query_read = '''SELECT ID_number, first_name, last_name,
                        CORE_student, graduation_year
-                FROM Basic_Info
-                ORDER BY last_name ASC
+                    FROM Basic_Info
+                    WHERE first_name= :first AND
+                          last_name= :last AND
+                          birthday= :bday
               '''
-    connection = _db_connection()          
-    output = pd.read_sql(query_read, con=connection) #df from the db using 'query'
-    connection.close()
+    for i in df.index:
+        last_name = df.loc[i, 'last_name'] 
+        first_name = df.loc[i, 'first_name']
+        bday = df.loc[i, 'birthday']
+        connection = _db_connection()          
+        output = pd.read_sql(query_read, params={'last': last_name,
+                                                 'first': first_name,
+                                                 'bday': bday}, 
+                             con=connection) #df from the db using 'query'
+        connection.close()
     
-    col_names = ['ID_number',
-                 'first_name',
-                 'last_name',
-                 'CORE_student',
-                 'graduation_year']
-    output.columns = col_names
-#This FOR loop creates a 'last_date' value that is equal to June 1, grad_year
-    for i in output.index:
+        col_names = ['ID_number',
+                     'first_name',
+                     'last_name',
+                     'CORE_student',
+                     'graduation_year']
+        output.columns = col_names
+        
+#This creates a 'last_date' value that is equal to June 1, grad_year
         last_date = str(output.iloc[i,4])
         last_date = last_date + '-06-01'
         output.at[i, 'last_date'] = last_date
 
 #convert value to datetime
-    output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
-    output.drop(columns=['graduation_year'], inplace = True) #drop col
-    output = output[['ID_number', #prepare df to write to db
-                     'last_name',
-                     'first_name',
-                     'CORE_student',
-                     'last_date']]
+        output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
+        output.drop(columns=['graduation_year'], inplace = True) #drop col
+        output = output[['ID_number', #prepare df to write to db
+                         'last_name',
+                         'first_name',
+                         'CORE_student',
+                         'last_date']]
+        print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(output)
+        input('Pause 5: Single row df to write to db')
     
-    print(output)
-    input()
-    
-    connection = _db_connection() #establish connection to db
-    output.to_sql('Last_Contact', connection, index=False,
-                    if_exists='append') #write to table 'Last_Contact'
-    connection.close()
+        connection = _db_connection() #establish connection to db
+        output.to_sql('Last_Contact', connection, index=False,
+                        if_exists='append') #write to table 'Last_Contact'
+        connection.close()
 
 def _db_connection():
     '''

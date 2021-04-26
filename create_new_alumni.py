@@ -493,7 +493,7 @@ def text_new_alumni_p2():
 
         if event == 'bday_year' and len(window[event].Get()) >= 1:
             if not re.match('^19\d{2}|20[0-4]{1}\d{1}$', window[event].Get()):
-                window['error_bday'].Update('Please enter a valid year\n(e.g. 1999.')
+                window['error_bday'].Update('Please enter a valid year\n(e.g. 1999.)')
                 window['bday_month'].Widget.configure(highlightcolor='purple', highlightthickness=2)
             else:
                 window['error_bday'].Update('')

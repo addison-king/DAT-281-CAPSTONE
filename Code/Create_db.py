@@ -61,6 +61,7 @@ def _create_db_table():
                         last_name text,
                         first_name text,
                         contact_date text,
+                        spoke text,
                         status text,
                         need text,
                         notes text

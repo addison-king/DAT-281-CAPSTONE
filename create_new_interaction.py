@@ -12,46 +12,61 @@ import pandas as pd
 import PySimpleGUI as sg
 import re
 from datetime import datetime
-import base
-
 
 
 def main():
 
     alumni = None
-    alumni_truth = None
     values_p1 = None
     values_p2 = None
+    values_p2_truth = None
 
-    alumni = lookup_alumni() #DATAFRAME
-    print(alumni)
+    alumni = lookup_alumni() #DICTIONARY
+    alumni.pop('birthday', None)
+    # print(alumni)
 
-    if isinstance(alumni, pd.DataFrame):
-        alumni_truth = {1:1} #used for Truth checking down below
+    if alumni != None:
         values_p1 = interaction_p1() #DICTIONARY
 
-
     if values_p1 != None:
-        values_p2 = interaction_p2() #DICTIONARY
-
-## CLEAN each section of values
-    if not None in [alumni_truth, values_p1, values_p2]:
-        c_values_page_1 = clean_page_1(values_p1)
-        c_values_page_2 = clean_page_2(values_p2)
-
-
-
+        if values_p1['spoke_no'] == True:
+            values_p2 = {'notes': 'None', 'status': 'None', 'need': 'None'}
+            values_p2_truth = False
+        else:
+            values_p2 = interaction_p2() #DICTIONARY
+            values_p2_truth = True
+            
+    if not None in [alumni, values_p1, values_p2]:
+        if values_p2_truth == True:
+            values_p1 = clean_page_1(values_p1)
+            values_p2 = clean_page_2(values_p2)
+        else:
+            values_p1 = clean_page_1(values_p1)
+        
+        dicts = merge_dicts(alumni, values_p1, values_p2)
+        result = pd.DataFrame([dicts], columns=dicts.keys())
+        
+        result = format_df(result)
+        
     else:
         print('None value. Quit.')
+        result = None
+    
+    return result
 
-## MERGE each section together in a dataframe
+def format_df(df):
+    df = df[['ID_number','last_name', 'first_name', 'contact_date', 
+             'spoke', 'status', 'need', 'notes']]
+    df = df.fillna('None')
+    df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
+    
+    return df
 
+def merge_dicts(al, p1, p2):
+    al.update(p1)
+    al.update(p2)
+    return al
 
-## RETURN dataframe (or None value if "Cancel" is selected)
-
-
-    # base.main()
-    # return values
 
 def clean_page_1(values):
 
@@ -155,6 +170,9 @@ def lookup_alumni():
                                '\nBirthday: ' + bday +
                                 '\n\nIs this correct?')
                     if sg.popup_yes_no(str_out) == 'Yes':
+                        
+                        temp = result.to_dict('records')
+                        result = temp[0]
                         break
 
             elif sum([len(values['first']), len(values['last'])]) >= 2:
@@ -173,9 +191,13 @@ def lookup_alumni():
                                '\nBirthday: ' + bday +
                                 '\n\nIs this correct?')
                     if sg.popup_yes_no(str_out) == 'Yes':
+                        
+                        temp = result.to_dict('records')
+                        result = temp[0]
                         break
 
     window.close()
+    
     return result
 
 
@@ -244,9 +266,9 @@ def interaction_p1():
                             'spoke to the alumni or not.')
 
             elif (len(values['date']) != 0 and
-                  sum([values['spoke_yes'], values['spoke_no']]) != 0):
+                  sum([values['spoke_yes'], values['spoke_no']]) == 1):
                 break
-
+            
 
     window.close()
     return values
@@ -262,7 +284,7 @@ def interaction_p2():
     frame_need = [[sg.Radio('Yes', 'need', key='need_yes', enable_events=True),
                    sg.Radio('No', 'need', key='need_no', enable_events=True)]]
 
-    frame_notes = [[sg.In(key='notes', size=(40,4))]]
+    frame_notes = [[sg.Multiline(key='notes', size=(55,4))]]
 
     layout = [[sg.Frame('Alumni Status', frame_status)],
               [sg.Frame('Is the Alumni requesting a need to be met?',
