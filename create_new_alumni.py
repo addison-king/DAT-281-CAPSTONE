@@ -560,12 +560,12 @@ def text_new_alumni_p3():
                 window['main_error'].Widget.config(background='red')
 #If 'Other' church option, then the field must be filled in
             elif (values['church_other'] == True and 
-                 len(values['church']) == 0):
+                 len(values['church_input']) == 0):
                  window['main_error'].Update('Please complete the \'Other\' church field.')
                  window['main_error'].Widget.config(background='red')
 #All conditions met, break, go to next page
             elif (sum([values['church_acac'], values['church_none']]) != 0 or
-                 (values['church_other'] == True and len(values['church']) != 0)):
+                 (values['church_other'] == True and len(values['church_input']) != 0)):
                         window['main_error'].Update('')
                         window['main_error'].Widget.config(background='#64778D')   
                         break
