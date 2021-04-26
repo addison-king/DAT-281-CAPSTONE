@@ -7,12 +7,12 @@ Final Project for CCAC DAT-281
 @author: BKG
 """
 
+import PySimpleGUI as sg
 import os
 import sys
 import sqlite3
 from sqlite3 import Error
 import pandas as pd
-import PySimpleGUI as sg
 
 import create_new_alumni #GUI where the user inputs information about an alum
 import create_new_interaction #GUI where the user inputs a new alumni interaction
@@ -33,6 +33,7 @@ def main():
     None.
 
     """
+    
     os.chdir(os.path.dirname(sys.argv[0]))
 
     sg.theme('DarkBlue3')
