@@ -10,8 +10,6 @@ from sqlite3 import Error
 import pandas as pd
 import PySimpleGUI as sg
 import re
-from re import search
-from datetime import datetime
 from fpdf import FPDF
 
 def main():

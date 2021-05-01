@@ -20,6 +20,7 @@ import alumni_to_db #writes a new alumni to the db
 import interaction_to_db #writes a new alumni interaction to the db
 import export_name_list #exports a .csv file with full list of names from db
 import export_call_list #exports a .csv file with a list of alumni to contact next
+import export_single_all_info #exports a .pdf file with all information on one alumni
 
 
 def main():
@@ -33,7 +34,7 @@ def main():
     None.
 
     """
-    
+
     os.chdir(os.path.dirname(sys.argv[0]))
 
     sg.theme('DarkBlue3')
@@ -53,6 +54,9 @@ def main():
                      size=(30,1))],
           [sg.Button('Export list of next alumni to contact',
                      key='contact',
+                     size=(30,1))],
+          [sg.Button('Select an alumni and export all data',
+                     key='export_all',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
           [sg.Button('Close the program',
@@ -79,6 +83,12 @@ def main():
         elif event[0] == 'contact':
             window.close()
             main_export_contact()
+
+        elif event[0] == 'export_all':
+            window.close()
+            export_single_all_info.main()
+            all_good()
+            main()
 
         elif event[0] in ('close', sg.WIN_CLOSED):
             break
