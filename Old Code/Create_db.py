@@ -62,8 +62,8 @@ def _create_db_table():
                         first_name text,
                         contact_date text,
                         spoke text,
+                        track text,
                         status text,
-                        need text,
                         notes text
                         )'''
     sql_table_id = '''CREATE table IF NOT EXISTS Alumni_ID (
@@ -97,7 +97,7 @@ def _create_db_table():
     cursor.execute(sql_delete_i_row)
     connection.commit()
     connection.close()
-    
+
 if __name__ == "__main__":
     # os.chdir(os.path.dirname(sys.argv[0]))
     main()

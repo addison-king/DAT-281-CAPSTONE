@@ -33,48 +33,48 @@ def main():
         values_page_5 = text_new_alumni_p5()
 
 #clean up each page's values
-    if not None in [values_page_1, values_page_2, values_page_3, 
+    if not None in [values_page_1, values_page_2, values_page_3,
                     values_page_4, values_page_5]:
-        values_page_1 = clean_page_1(values_page_1)  
+        values_page_1 = clean_page_1(values_page_1)
         values_page_2 = clean_page_2(values_page_2)
         values_page_3 = clean_page_3(values_page_3)
         values_page_4 = clean_page_4(values_page_4)
         values_page_5 = clean_page_5(values_page_5)
-        
+
 #merge the 5 dictionaries together
         alumni_values = merge_dicts(values_page_1, values_page_2,
                                     values_page_3, values_page_4,
                                     values_page_5)
-        
+
 #convert the dictionary to a dataframe
         alumni = pd.DataFrame([alumni_values], columns=alumni_values.keys())
-        
+
 #rename all cols and reorder cols
         alumni = format_df(alumni)
-        
+
 #Sanity check
         for i in alumni:
             print(i, '-', alumni[i][0])
-        
+
         return alumni
-        
+
     else:
         print('None value. Quitting..')
         return None
-        
+
 
 
 
 def merge_dicts(p1, p2, p3, p4, p5):
-    p1.update(p2) 
-    p1.update(p3) 
-    p1.update(p4) 
-    p1.update(p5) 
-    
+    p1.update(p2)
+    p1.update(p3)
+    p1.update(p4)
+    p1.update(p5)
+
     return p1
 
 def format_df(df):
-    df.rename(columns={'first': 'first_name', 
+    df.rename(columns={'first': 'first_name',
                        'last': 'last_name',
                        'core': 'CORE_student',
                        'grad_year': 'graduation_year',
@@ -88,7 +88,7 @@ def format_df(df):
                        'options': 'OPTIONS',
                        'arts': 'performing_arts'
                        }, inplace=True)
-    
+
     df = df[['last_name', 'first_name', 'CORE_student', 'graduation_year',
              'phone_num', 'birthday', 'gender', 'address', 'city', 'state',
              'zipcode', 'email', 'church', 'highschool', 'college', 'job',
@@ -96,9 +96,9 @@ def format_df(df):
              'parent_guardian_email', 'emergency_contact',
              'emergency_contact_phone_number', 'OPTIONS', 'education',
              'athletics', 'performing_arts']]
-    
+
     df = df.fillna('None')
-    
+
     title_case_list = ['last_name',
                        'first_name',
                        'address',
@@ -108,12 +108,12 @@ def format_df(df):
                        'highschool',
                        'college',
                        'job']
-    
+
     for i in title_case_list:
         df[i] = df[i].str.title()
-        
+
     df['birthday'] = pd.to_datetime(df['birthday']).dt.strftime('%Y-%m-%d')
-        
+
     return df
 
 def clean_page_1(values):
@@ -125,18 +125,18 @@ def clean_page_1(values):
         values.pop('core_no', None)
         values.pop('core_yes', None)
         values['core'] = 'No'
-    
+
     if not '' in (values['phone1'], values['phone2'], values['phone3']):
         phone = values['phone1'] + '-' + values['phone2'] + '-' + values['phone3']
-    else:   
+    else:
         phone = ''
-    
+
     values.pop('phone1', None)
     values.pop('phone2', None)
     values.pop('phone3', None)
-    
+
     values['phone_num'] = phone
-    
+
     return values
 
 def clean_page_2(values):
@@ -144,24 +144,24 @@ def clean_page_2(values):
         values.pop('gender_female', None)
         values.pop('gender_male', None)
         values['gender'] = 'Female'
-        
+
     elif values['gender_male'] == True:
         values.pop('gender_female', None)
         values.pop('gender_male', None)
         values['gender'] = 'Male'
-    
+
     if values['city_pgh'] == True:
         values['city'] = 'Pittsburgh'
         values.pop('city_pgh', None)
         values.pop('city_other', None)
         values.pop('city_input', None)
-        
+
     elif values['city_other'] == True:
         values['city'] = values['city_input']
         values.pop('city_pgh', None)
         values.pop('city_other', None)
         values.pop('city_input', None)
-        
+
     if values['state_pa'] == True:
         values['state'] = 'Pennsylvania'
         values.pop('state_pa', None)
@@ -173,21 +173,21 @@ def clean_page_2(values):
         values.pop('state_pa', None)
         values.pop('state_other', None)
         values.pop('state_input', None)
-        
-    
+
+
     if not '' in (values['bday_month'],values['bday_day'],values['bday_year']):
         birthday = (values['bday_year'] + '-' +
                     values['bday_month'] + '-' +
                     values['bday_day'])
     else:
         birthday = ''
-        
+
     values.pop('bday_month', None)
     values.pop('bday_day', None)
     values.pop('bday_year', None)
-    
+
     values['birthday'] = birthday
-    
+
     return values
 
 def clean_page_3(values):
@@ -197,56 +197,56 @@ def clean_page_3(values):
         values.pop('church_none', None)
         values.pop('church_input', None)
         values.pop('church_other', None)
-        
+
     elif values['church_none'] == True:
         values['church'] = 'None'
         values.pop('church_acac', None)
         values.pop('church_none', None)
         values.pop('church_input', None)
         values.pop('church_other', None)
-        
+
     elif values['church_other'] == True:
         values['church'] = values['church_input']
         values.pop('church_acac', None)
         values.pop('church_none', None)
         values.pop('church_input', None)
         values.pop('church_other', None)
-        
+
     return values
 
 def clean_page_4(values):
     values.pop('e_parent', None)
     values.pop('e_number', None)
-    
+
     if not '' in (values['parent_phone1'],
                   values['parent_phone2'],
                   values['parent_phone3']):
-        parent_phone = (values['parent_phone1'] + '-' + 
-                        values['parent_phone2'] + '-' + 
+        parent_phone = (values['parent_phone1'] + '-' +
+                        values['parent_phone2'] + '-' +
                         values['parent_phone3'])
     else:
         parent_phone = ''
-        
+
     values.pop('parent_phone1', None)
     values.pop('parent_phone2', None)
     values.pop('parent_phone3', None)
     values['parent_phone'] = parent_phone
-    
+
     if not '' in (values['e_phone1'],
                   values['e_phone2'],
                   values['e_phone3']):
-    
-        e_phone = (values['e_phone1'] + '-' + 
-                   values['e_phone2'] + '-' + 
+
+        e_phone = (values['e_phone1'] + '-' +
+                   values['e_phone2'] + '-' +
                    values['e_phone3'])
     else:
         e_phone = ''
-        
+
     values.pop('e_phone1', None)
     values.pop('e_phone2', None)
     values.pop('e_phone3', None)
     values['e_phone'] = e_phone
-    
+
     return values
 
 def clean_page_5(values):
@@ -258,7 +258,7 @@ def clean_page_5(values):
         values['options'] = 'No'
         values.pop('options_yes', None)
         values.pop('options_no', None)
-    
+
     if values['education_yes'] == True:
         values['education'] = 'Yes'
         values.pop('education_yes', None)
@@ -267,7 +267,7 @@ def clean_page_5(values):
         values['education'] = 'No'
         values.pop('education_yes', None)
         values.pop('education_no', None)
-        
+
     if values['athletics_yes'] == True:
         values['athletics'] = 'Yes'
         values.pop('athletics_yes', None)
@@ -276,7 +276,7 @@ def clean_page_5(values):
         values['athletics'] = 'No'
         values.pop('athletics_yes', None)
         values.pop('athletics_no', None)
-        
+
     if values['arts_yes'] == True:
         values['arts'] = 'Yes'
         values.pop('arts_yes', None)
@@ -285,14 +285,14 @@ def clean_page_5(values):
         values['arts'] = 'No'
         values.pop('arts_yes', None)
         values.pop('arts_no', None)
-    
+
     return values
-    
+
 
 def text_new_alumni_p1():
 
     frame_first_name = [[sg.Input(key='first')]]
-    
+
     frame_last_name = [[sg.Input(key='last')]]
 
     frame_core_student = [[sg.Radio('Yes', 'CORE', key='core_yes'),
@@ -310,10 +310,10 @@ def text_new_alumni_p1():
                            sg.T('-', pad=(0,0)),
                            sg.In(key='phone3', size=(5,1),
                                  change_submits=True, do_not_clear=True)]]
-    
+
     frame_email = [[sg.In(key='email')]]
-    
-    frame_missing_val = [[sg.T('', key='main_error', 
+
+    frame_missing_val = [[sg.T('', key='main_error',
                                text_color='white', size=(43,1))]]
 
     layout = [[sg.Text('New Alumni - Page 1')],
@@ -339,7 +339,7 @@ def text_new_alumni_p1():
 #first name cannot be empty
             if len(values['first']) == 0:
                     window['main_error'].Update('Please input a First Name')
-                    window['main_error'].Widget.config(background='red')  
+                    window['main_error'].Widget.config(background='red')
                     window['first'].SetFocus()
 #last name cannot be empty
             elif len(values['last']) == 0:
@@ -355,15 +355,15 @@ def text_new_alumni_p1():
             elif ((sum([len(values['phone1']),
                        len(values['phone2']),
                        len(values['phone3'])]) != 0) and
-                 (len(values['phone1']) !=3 or 
-                  len(values['phone2']) !=3 or 
+                 (len(values['phone1']) !=3 or
+                  len(values['phone2']) !=3 or
                   len(values['phone3']) !=4)):
                     window['main_error'].Update('Please complete the Phone Number')
                     window['main_error'].Widget.config(background='red')
-#No errors, break, continue to next page  
-            elif (sum([len(values['last']), 
+#No errors, break, continue to next page
+            elif (sum([len(values['last']),
                        len(values['first'])]) >= 2 and
-                  len(values['grad_year']) == 4 and 
+                  len(values['grad_year']) == 4 and
                   sum([len(values['phone1']),
                        len(values['phone2']),
                        len(values['phone3'])]) in [0,10]):
@@ -418,12 +418,14 @@ def text_new_alumni_p2():
                     sg.Radio('Other', 'state', key='state_other', enable_events=True),
                     sg.In(key='state_input', size=(23,1))]]
 
-    frame_zipcode = [[sg.In(key='zipcode', size=(6,1),
+    frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212', default=True),
+                      sg.Radio('Other', 'zipcode', key='zipcode_other', enable_events=True),
+                      sg.In(key='zipcode', size=(6,1),
                             change_submits=True, do_not_clear=True),
                       sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
 
-    frame_missing_val = [[sg.T('', key='main_error', 
-                               text_color='white', size=(43,1))]]   
+    frame_missing_val = [[sg.T('', key='main_error',
+                               text_color='white', size=(43,1))]]
 
     layout = [[sg.T('New Alumni - Page 2')],
               [sg.Frame('Birthday (mm-dd-yyyy) *', frame_birthday)],
@@ -447,8 +449,8 @@ def text_new_alumni_p2():
             break
         if event == 'next_page':
 #Birthday field must be empty or mm-dd-yyyy
-            if (len(values['bday_month']) !=2 or 
-                  len(values['bday_day']) !=2 or 
+            if (len(values['bday_month']) !=2 or
+                  len(values['bday_day']) !=2 or
                   len(values['bday_year']) !=4):
                     window['main_error'].Update('Please complete the Birthday')
                     window['main_error'].Widget.config(background='red')
@@ -456,20 +458,20 @@ def text_new_alumni_p2():
             elif sum([values['gender_male'], values['gender_female']]) == 0:
                     window['main_error'].Update('Please select a Gender')
                     window['main_error'].Widget.config(background='red')
-#Zipcode must be a 5-digit number    
-            elif len(values['zipcode']) != 5:
+#Zipcode must be a 5-digit number
+            elif values['zipcode_other'] == True and len(values['zipcode']) != 5:
                 window['main_error'].Update('Please input a 5-digit Zipcode')
-                window['main_error'].Widget.config(background='red')  
+                window['main_error'].Widget.config(background='red')
 #All conditions met, break, move to next page
-            elif (len(values['zipcode']) == 5 and
+            elif ((len(values['zipcode']) == 5 or values['zipcode_15212'] == True) and
                   sum([values['gender_male'], values['gender_female']]) != 0 and
-                (len(values['bday_month']) ==2 or 
-                 len(values['bday_day']) ==2 or 
+                (len(values['bday_month']) ==2 or
+                 len(values['bday_day']) ==2 or
                  len(values['bday_year']) ==4)):
                         window['main_error'].Update('')
                         window['main_error'].Widget.config(background='#64778D')
                         break
-            
+
         if event == 'city_other':
             window['city_input'].SetFocus()
         if event == 'state_other':
@@ -531,8 +533,8 @@ def text_new_alumni_p3():
     frame_job = [[sg.In(key='job', size=(55,1))]]
 
     frame_health = [[sg.In(key='health', size=(55,1))]]
-    
-    frame_missing_val = [[sg.T('', key='main_error', 
+
+    frame_missing_val = [[sg.T('', key='main_error',
                                text_color='white', size=(43,1))]]
 
 
@@ -562,7 +564,7 @@ def text_new_alumni_p3():
                 window['main_error'].Update('Please select a church affiliation')
                 window['main_error'].Widget.config(background='red')
 #If 'Other' church option, then the field must be filled in
-            elif (values['church_other'] == True and 
+            elif (values['church_other'] == True and
                  len(values['church_input']) == 0):
                  window['main_error'].Update('Please complete the \'Other\' church field.')
                  window['main_error'].Widget.config(background='red')
@@ -571,7 +573,7 @@ def text_new_alumni_p3():
             elif (sum([values['church_acac'], values['church_none']]) != 0 or
                  (values['church_other'] == True and len(values['church_input']) != 0)):
                         window['main_error'].Update('')
-                        window['main_error'].Widget.config(background='#64778D')   
+                        window['main_error'].Widget.config(background='#64778D')
                         break
 
         if event in ('church_acac', 'church_none'):
@@ -611,7 +613,7 @@ def text_new_alumni_p4():
                              [sg.Checkbox('Use Parent/Guardian phone number from above',
                                           key='e_number',
                                           enable_events=True)]]
-    frame_missing_val = [[sg.T('', key='main_error', 
+    frame_missing_val = [[sg.T('', key='main_error',
                                text_color='white', size=(43,1))]]
 
     layout = [[sg.T('New Alumni - Page 4')],
@@ -637,8 +639,8 @@ def text_new_alumni_p4():
             if ((sum([len(values['parent_phone1']),
                        len(values['parent_phone2']),
                        len(values['parent_phone3'])]) != 0) and
-                 (len(values['parent_phone1']) !=3 or 
-                  len(values['parent_phone2']) !=3 or 
+                 (len(values['parent_phone1']) !=3 or
+                  len(values['parent_phone2']) !=3 or
                   len(values['parent_phone3']) !=4)):
                     window['main_error'].Update(
                         'Please complete the Parent/ Guardian Phone Number')
@@ -647,8 +649,8 @@ def text_new_alumni_p4():
             elif ((sum([len(values['e_phone1']),
                        len(values['e_phone2']),
                        len(values['e_phone3'])]) != 0) and
-                 (len(values['e_phone1']) !=3 or 
-                  len(values['e_phone2']) !=3 or 
+                 (len(values['e_phone1']) !=3 or
+                  len(values['e_phone2']) !=3 or
                   len(values['e_phone3']) !=4)):
                     window['main_error'].Update(
                         'Please complete the Emergency Contact Phone Number')
@@ -661,9 +663,9 @@ def text_new_alumni_p4():
                        len(values['e_phone2']),
                        len(values['e_phone3'])]) in [0,10]):
                         window['main_error'].Update('')
-                        window['main_error'].Widget.config(background='#64778D')  
+                        window['main_error'].Widget.config(background='#64778D')
                         break
-            
+
         if event in ('parent_phone1', 'parent_phone2', 'parent_phone3',
                      'e_phone1', 'e_phone2', 'e_phone3'):
             window[event].Update(re.sub("[^0-9]", "", values[event]))
@@ -704,8 +706,8 @@ def text_new_alumni_p5():
 
     frame_arts = [[sg.Radio('Yes', 'arts', key='arts_yes'),
                     sg.Radio('No', 'arts', key='arts_no')]]
-    
-    frame_missing_val = [[sg.T('', key='main_error', 
+
+    frame_missing_val = [[sg.T('', key='main_error',
                                text_color='white', size=(43,1))]]
 
 
@@ -742,7 +744,7 @@ def text_new_alumni_p5():
                          values['athletics_yes'], values['athletics_no'],
                          values['arts_yes'], values['arts_no']]) == 4:
                             window['main_error'].Update('')
-                            window['main_error'].Widget.config(background='#64778D') 
+                            window['main_error'].Widget.config(background='#64778D')
                             break
 
     window.close()
