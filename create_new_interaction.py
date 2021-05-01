@@ -124,9 +124,10 @@ def clean_page_2(values):
                     new = temp['status_other_input']
                     clean['status'] = temp['status_other_input'].title()
                 else:
-                    new = key.replace('status_','').title()
+                    new = key.replace('status_','')
+                    new = new.replace('_', ' ').title()
                     clean['status'] = new
-    clean['notes'] = values['notes'].strip('\n').title()
+    clean['notes'] = values['notes'].strip('\n')
 
     return clean
 

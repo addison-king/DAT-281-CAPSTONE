@@ -12,12 +12,16 @@ import PySimpleGUI as sg
 import re
 from re import search
 from datetime import datetime
+from fpdf import FPDF
 
 def main():
     print()
     alumni = lookup_alumni()
     print(alumni)
     all_info = lookup_all_info(alumni)
+    print()
+    for i in all_info.columns:
+        print(i, all_info.at[0,i])
 
 
 def lookup_alumni():
@@ -133,6 +137,18 @@ def sql_lookup_num(id_num):
 
 
 def lookup_all_info(alumni):
+    print(alumni['ID_number'])
+    query = '''SELECT *
+               FROM Basic_Info
+               WHERE ID_number = :id
+            '''
+    connection = _db_connection()
+    results = pd.read_sql(query,
+                          con=connection,
+                          params={'id':alumni['ID_number']})
+    connection.close()
+    return results
+
 
 
 
@@ -153,5 +169,4 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-
     main()
