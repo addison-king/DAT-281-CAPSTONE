@@ -11,6 +11,7 @@ from sqlite3 import Error
 import pandas as pd
 import PySimpleGUI as sg
 import re
+from re import search
 from datetime import datetime
 
 
@@ -23,43 +24,42 @@ def main():
 
     alumni = lookup_alumni() #DICTIONARY
     alumni.pop('birthday', None)
-    # print(alumni)
 
     if alumni != None:
         values_p1 = interaction_p1() #DICTIONARY
 
     if values_p1 != None:
         if values_p1['spoke_no'] == True:
-            values_p2 = {'notes': 'None', 'status': 'None', 'need': 'None'}
+            values_p2 = {'notes': 'None', 'track': 'None', 'status': 'None'}
             values_p2_truth = False
         else:
             values_p2 = interaction_p2() #DICTIONARY
             values_p2_truth = True
-            
+
     if not None in [alumni, values_p1, values_p2]:
         if values_p2_truth == True:
             values_p1 = clean_page_1(values_p1)
             values_p2 = clean_page_2(values_p2)
         else:
             values_p1 = clean_page_1(values_p1)
-        
+
         dicts = merge_dicts(alumni, values_p1, values_p2)
         result = pd.DataFrame([dicts], columns=dicts.keys())
-        
+
         result = format_df(result)
-        
+
     else:
         print('None value. Quit.')
         result = None
-    
+
     return result
 
 def format_df(df):
-    df = df[['ID_number','last_name', 'first_name', 'contact_date', 
-             'spoke', 'status', 'need', 'notes']]
+    df = df[['ID_number','last_name', 'first_name', 'contact_date',
+             'spoke', 'track', 'status', 'notes']]
     df = df.fillna('None')
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
-    
+
     return df
 
 def merge_dicts(al, p1, p2):
@@ -93,36 +93,42 @@ def clean_page_1(values):
 
 def clean_page_2(values):
 
-    if values['status_good'] == True:
-        values['status'] = 'Good'
-        values.pop('status_good', None)
-        values.pop('status_poor', None)
-        values.pop('status_other', None)
-        values.pop('status_input', None)
-    elif values['status_poor'] == True:
-        values['status'] = 'Poor'
-        values.pop('status_good', None)
-        values.pop('status_poor', None)
-        values.pop('status_other', None)
-        values.pop('status_input', None)
-    elif values['status_other'] == True:
-        values['status'] = values['status_input']
-        values.pop('status_good', None)
-        values.pop('status_poor', None)
-        values.pop('status_other', None)
-        values.pop('status_input', None)
+    temp = dict()
+    for (key, value) in values.items():
+        if value == True:
+            if key == 'track_other':
+                temp['track_other_input'] = values['track_other_input']
+            elif key == 'status_other':
+                temp['status_other_input'] = values['status_other_input']
+            else:
+                temp[key] = value
 
-    if values['need_yes'] == True:
-        values['need'] = 'Yes'
-        values.pop('need_yes', None)
-        values.pop('need_no', None)
-    elif values['need_no'] == True:
-        values['need'] = 'No'
-        values.pop('need_yes', None)
-        values.pop('need_no', None)
+    clean = dict()
+    track = ['college', 'military', 'ministry', 'trade', 'working', 'track_other']
+    for i in track:
+        for key in temp:
+            if search(i, key):
+                if i == 'track_other':
+                    new = temp['track_other_input']
+                    # print(new)
+                    clean['track'] = temp['track_other_input'].title()
+                else:
+                    new = key.replace('track_','').title()
+                    clean['track'] = new
 
+    status = ['on_track', 'behind', 'graduated', 'full_time', 'part_time', 'unemployed', 'status_other']
+    for i in status:
+        for key in temp:
+            if search(i, key):
+                if i == 'status_other':
+                    new = temp['status_other_input']
+                    clean['status'] = temp['status_other_input'].title()
+                else:
+                    new = key.replace('status_','').title()
+                    clean['status'] = new
+    clean['notes'] = values['notes'].strip('\n').title()
 
-    return values #dict {'notes':'STRING', 'status':'STRING', 'need':'Yes | No'}
+    return clean
 
 
 def lookup_alumni():
@@ -170,7 +176,7 @@ def lookup_alumni():
                                '\nBirthday: ' + bday +
                                 '\n\nIs this correct?')
                     if sg.popup_yes_no(str_out) == 'Yes':
-                        
+
                         temp = result.to_dict('records')
                         result = temp[0]
                         break
@@ -191,13 +197,13 @@ def lookup_alumni():
                                '\nBirthday: ' + bday +
                                 '\n\nIs this correct?')
                     if sg.popup_yes_no(str_out) == 'Yes':
-                        
+
                         temp = result.to_dict('records')
                         result = temp[0]
                         break
 
     window.close()
-    
+
     return result
 
 
@@ -268,15 +274,15 @@ def interaction_p1():
             elif (len(values['date']) != 0 and
                   sum([values['spoke_yes'], values['spoke_no']]) == 1):
                 break
-            
+
 
     window.close()
     return values
 
 
-def interaction_p2():
-
 # =============================================================================
+# def interaction_p2():
+#
 #     frame_status = [[sg.Radio('On Track', 'status', key='status_on_track', enable_events=True),
 #                      sg.Radio('Behind', 'status', key='status_behind', enable_events=True)],
 #                     [sg.Radio('Working ', 'status', key='status_working', enable_events=True),
@@ -286,45 +292,43 @@ def interaction_p2():
 #                      sg.Radio('Ministry', 'status', key='status_ministry', enable_events=True)],
 #                      [sg.Radio('Other', 'status', key='status_other', enable_events=True),
 #                       sg.In(key='status_input')]]
-# 
+#
 #     frame_need = [[sg.Radio('Yes', 'need', key='need_yes', enable_events=True),
 #                    sg.Radio('No', 'need', key='need_no', enable_events=True)]]
-# =============================================================================
-
-    frame_track = [[sg.Radio('College', 'track', key='track_college', enable_events=True),
-                    sg.Radio('Working', 'track', key='track_working', enable_events=True)]]
-    
-    frame_status = [[sg.Radio('Test', 'status', key='status_one', enable_events=True),
-                     sg.Radio('', 'status', key='status_two', enable_events=True),
-                     sg.Radio('', 'status', key='status_three', enable_events=True)]]
-
-    frame_notes = [[sg.Multiline(key='notes', size=(55,4))]]
-
-    layout = [[sg.Frame('Post-Secondary Track', frame_track)],
-              [sg.Frame('Alumni Status', frame_status)],
-              [sg.Frame('Notes', frame_notes)],
-              [sg.OK(), sg.Cancel()]]
-
-    window = sg.Window('UIF: Alumni Database', layout)
-
-    while True:
-        event, values = window.read()
-
-        if event in ('Cancel', sg.WIN_CLOSED):
-            values = None
-            break
-    
-        elif event == 'track_college':
-            print('Here')
-            print(window['status_one'])
-            college = ['On Track', 'Behind', 'Graduated']
-            window['status_one'].Update(college[0])
-            window['status_two'].Update(college[1])
-            window['status_three'].Update(college[2])
-            
-            
-
-# =============================================================================
+#
+#     frame_track = [[sg.Radio('College', 'track', key='track_college', enable_events=True),
+#                     sg.Radio('Working', 'track', key='track_working', enable_events=True)]]
+#
+#     frame_status = [[sg.Radio('Test', 'status', key='status_one', enable_events=True),
+#                      sg.Radio('', 'status', key='status_two', enable_events=True),
+#                      sg.Radio('', 'status', key='status_three', enable_events=True)]]
+#
+#     frame_notes = [[sg.Multiline(key='notes', size=(55,4))]]
+#
+#     layout = [[sg.Frame('Post-Secondary Track', frame_track)],
+#               [sg.Frame('Alumni Status', frame_status)],
+#               [sg.Frame('Notes', frame_notes)],
+#               [sg.OK(), sg.Cancel()]]
+#
+#     window = sg.Window('UIF: Alumni Database', layout)
+#
+#     while True:
+#         event, values = window.read()
+#
+#         if event in ('Cancel', sg.WIN_CLOSED):
+#             values = None
+#             break
+#
+#         elif event == 'track_college':
+#             print('Here')
+#             print(window['status_one'])
+#             college = ['On Track', 'Behind', 'Graduated']
+#             window['status_one'].Update(college[0])
+#             window['status_two'].Update(college[1])
+#             window['status_three'].Update(college[2])
+#
+#
+#
 #         elif event == 'OK':
 #             if sum([values['status_good'],
 #                     values['status_poor'],
@@ -343,14 +347,77 @@ def interaction_p2():
 #                       values['need_yes'],
 #                       values['need_no']]) == 2:
 #                 break
-# 
-# 
+#
+#
 #         elif event in ('need_yes', 'need_no'):
 #             window['notes'].SetFocus()
-# 
+#
 #         elif event == 'status_other':
 #             window['status_input'].SetFocus()
+#
+#     window.close()
+#     return values
 # =============================================================================
+
+def interaction_p2():
+    frame_track = [[sg.Radio('College', 'track', key='track_college', enable_events=True),
+                    sg.Radio('Military', 'track', key='track_military', enable_events=True),
+                    sg.Radio('Ministry', 'track', key='track_ministry', enable_events=True)],
+                   [sg.Radio('Trade School', 'track', key='track_trade', enable_events=True),
+                    sg.Radio('Workforce', 'track', key='track_working', enable_events=True)],
+                   [sg.Radio('Other', 'track', key='track_other', enable_events=True),
+                    sg.In(key='track_other_input')]]
+
+
+
+    frame_status = [[sg.Radio('On Track', 'status', key='status_on_track', enable_events=True),
+                      sg.Radio('Behind', 'status', key='status_behind', enable_events=True),
+                      sg.Radio('Graduated', 'status', key='status_graduated', enable_events=True)],
+                    [sg.Radio('Full Time', 'status', key='status_full_time', enable_events=True),
+                      sg.Radio('Part Time', 'status', key='status_part_time', enable_events=True),
+                      sg.Radio('Unemployed', 'status', key='status_unemployed', enable_events=True)],
+                    [sg.Radio('Other', 'status', key='status_other', enable_events=True),
+                      sg.In(key='status_other_input')]]
+
+    frame_notes = [[sg.Multiline(key='notes', size=(53,4))]]
+
+    layout = [[sg.Frame('Post-Secondary Activity', frame_track)],
+              [sg.Frame('Activity Status', frame_status)],
+              [sg.Frame('Notes', frame_notes)],
+              [sg.OK(), sg.Cancel()]]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+
+    while True:
+        event, values = window.read()
+
+        if event in ('Cancel', sg.WIN_CLOSED):
+            values = None
+            window.close()
+            break
+
+        elif event == 'track_other':
+            window['track_other_input'].SetFocus()
+
+        elif event == 'status_other':
+            window['status_other_input'].SetFocus()
+
+        elif event == 'OK':
+            if sum([values['track_college'], values['track_military'],
+                    values['track_ministry'], values['track_trade'],
+                    values['track_working'], values['track_other']]) == 0:
+                sg.popup_ok('Please select a Post-Secondary Activity option.')
+            elif values['track_other'] == True and len(values['track_other_input']) == 0:
+                sg.popup_ok('Please fill in the Post-Secondary Activity\n\"Other\" text field.')
+            elif sum([values['status_on_track'], values['status_behind'],
+                      values['status_graduated'], values['status_full_time'],
+                      values['status_part_time'], values['status_unemployed'],
+                      values['status_other']]) == 0:
+                sg.popup_ok('Please select a Activity Status option.')
+            elif values['status_other'] == True and len(values['status_other_input']) == 0:
+                sg.popup_ok('Please fill in the Activity Status\n\"Other\" text field.')
+            else:
+                break
 
     window.close()
     return values
@@ -376,5 +443,5 @@ def _db_connection():
 if __name__ == "__main__":
     #main()
     test = main()
-    print(test) 
+    print(test)
     print('\n',type(test)) #Dataframe
