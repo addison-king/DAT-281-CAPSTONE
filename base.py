@@ -87,7 +87,7 @@ def main():
         elif event[0] == 'export_all':
             window.close()
             export_single_all_info.main()
-            all_good()
+            # all_good()
             main()
 
         elif event[0] in ('close', sg.WIN_CLOSED):

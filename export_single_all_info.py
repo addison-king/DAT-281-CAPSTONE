@@ -15,58 +15,12 @@ from fpdf import FPDF
 def main():
 
     alumni_number = lookup_alumni()
-    alumni_basic = basic_info(alumni_number)
-    alumni_contacts = contact_events(alumni_number)
+    if alumni_number != None:
+        alumni_basic = basic_info(alumni_number)
+        alumni_contacts = contact_events(alumni_number)
+        print_it(alumni_basic, alumni_contacts)
 
 
-    name = alumni_basic.at[0,'First Name'] + ' ' + alumni_basic.at[0,'Last Name']
-    pdf = PDF(name)
-    pdf.alias_nb_pages()
-    pdf.add_page()
-    pdf.set_font('Arial', '', 12)
-
-    pdf.cell(0,15,'Basic Information', 0,1,'C')
-
-    for i in alumni_basic.columns:
-        pdf.cell(100, 8, i, 'LB', 0)
-        pdf.cell(0, 8, alumni_basic.at[0,i], 'B', 1, 'R')
-
-    pdf.add_page()
-
-    pdf.cell(0,15,'All Contact Events', 0,1,'C')
-
-    counter = 0
-    for i in alumni_contacts.index:
-        for j in alumni_contacts.columns:
-            if j == 'Date of Contact':
-                pdf.cell(50, 8, j, 'TLB', 0)
-                pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 'TB', 'R')
-
-            elif j == 'Notes':
-                if len(alumni_contacts.at[i,j]) > 75:
-                    pdf.cell(50, 8, j, 'L', 0)
-                    pdf.set_font('Arial','',10)
-                    pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 0, 'L')
-                    pdf.set_font('Arial', '', 12)
-                else:
-                    pdf.cell(50, 8, j, 'L', 0)
-                    pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 0, 'R')
-            else:
-                pdf.cell(50, 8, j, 'LB', 0)
-                pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 'B', 'R')
-
-        pdf.ln(15)
-        counter -=- 1
-
-        if counter % 2 == 0 and counter < len(alumni_contacts.index):
-            pdf.add_page()
-            pdf.cell(0,15,'All Contact Events', 0,1,'C')
-
-
-    file_name = name + '.pdf'
-    location = select_folder()
-    write = location + '/' + file_name
-    pdf.output(write, 'F')
 
 class PDF(FPDF):
     def __init__(self, name):
@@ -222,6 +176,7 @@ def lookup_alumni():
 
                         temp = result.to_dict('records')
                         result = temp[0]
+                        result = result['ID_number']
                         break
 
             elif sum([len(values['first']), len(values['last'])]) >= 2:
@@ -243,12 +198,71 @@ def lookup_alumni():
 
                         temp = result.to_dict('records')
                         result = temp[0]
+                        result = result['ID_number']
                         break
 
     window.close()
-    result = result['ID_number']
 
     return result
+
+def print_it(alumni_basic, alumni_contacts):
+    layout = [[sg.Text('Creating the .pdf document.')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+    while True:
+        event = window.read(timeout=2)
+
+        name = alumni_basic.at[0,'First Name'] + ' ' + alumni_basic.at[0,'Last Name']
+        pdf = PDF(name)
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_font('Arial', '', 12)
+
+        pdf.cell(0,15,'Basic Information', 0,1,'C')
+
+        for i in alumni_basic.columns:
+            pdf.cell(100, 8, i, 'LB', 0)
+            pdf.cell(0, 8, alumni_basic.at[0,i], 'B', 1, 'R')
+
+        pdf.add_page()
+
+        pdf.cell(0,15,'All Contact Events', 0,1,'C')
+
+        counter = 0
+        for i in alumni_contacts.index:
+            for j in alumni_contacts.columns:
+                if j == 'Date of Contact':
+                    pdf.cell(50, 8, j, 'TLB', 0)
+                    pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 'TB', 'R')
+
+                elif j == 'Notes':
+                    if len(alumni_contacts.at[i,j]) > 75:
+                        pdf.cell(50, 8, j, 'L', 0)
+                        pdf.set_font('Arial','',10)
+                        pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 0, 'L')
+                        pdf.set_font('Arial', '', 12)
+                    else:
+                        pdf.cell(50, 8, j, 'L', 0)
+                        pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 0, 'R')
+                else:
+                    pdf.cell(50, 8, j, 'LB', 0)
+                    pdf.multi_cell(0, 8, alumni_contacts.at[i,j], 'B', 'R')
+
+            pdf.ln(15)
+            counter -=- 1
+
+            if counter % 2 == 0 and counter < len(alumni_contacts.index):
+                pdf.add_page()
+                pdf.cell(0,15,'All Contact Events', 0,1,'C')
+
+
+        file_name = name + '.pdf'
+        break
+    window.close()
+    location = select_folder()
+    if location != None:
+        write = location + '/' + file_name
+        pdf.output(write, 'F')
+        all_good()
 
 
 def sql_lookup_name(first, last):
@@ -298,6 +312,18 @@ def select_folder():
     if values[1][0] != '':
         return values[1][0]
     return None
+
+
+def all_good():
+    layout = [[sg.Text('Everything completed without errors.',
+               font=('Arial', 15))],
+              [sg.Button('Return to Main Menu', key='close')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+    while True:
+        event = window.read()
+        if event[0] in ('close', sg.WIN_CLOSED):
+            break
+    window.close()
 
 
 def _db_connection():
