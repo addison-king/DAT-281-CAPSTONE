@@ -45,7 +45,7 @@ def main():
           [sg.Button('Create a new alumni for the database',
                      key='alum',
                      size=(30,1))],
-          [sg.Button('Create a new interaction with alumni',
+          [sg.Button('Create a new interaction with an alumni',
                      key='interaction',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
