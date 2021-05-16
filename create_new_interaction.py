@@ -23,9 +23,9 @@ def main():
     values_p2_truth = None
 
     alumni = lookup_alumni() #DICTIONARY
-    alumni.pop('birthday', None)
 
     if alumni != None:
+        alumni.pop('birthday', None)
         values_p1 = interaction_p1() #DICTIONARY
 
     if values_p1 != None:

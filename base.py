@@ -21,6 +21,7 @@ import interaction_to_db #writes a new alumni interaction to the db
 import export_name_list #exports a .csv file with full list of names from db
 import export_call_list #exports a .csv file with a list of alumni to contact next
 import export_single_all_info #exports a .pdf file with all information on one alumni
+import get_updated_alumni_info #prompts the user to input new changes to an alumni
 
 
 def main():
@@ -47,6 +48,9 @@ def main():
                      size=(30,1))],
           [sg.Button('Create a new interaction with an alumni',
                      key='interaction',
+                     size=(30,1))],
+          [sg.Button('Update the information on an alumni',
+                     key='update_basic',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
           [sg.Button('Export list of alumni with ID numbers',
@@ -75,6 +79,10 @@ def main():
         elif event[0] == 'interaction':
             window.close()
             main_new_interaction()
+        
+        elif event[0] == 'update_basic':
+            window.close()
+            update_basic_info()
 
         elif event[0] == 'export_ID':
             window.close()
@@ -105,7 +113,7 @@ def main_add_alum():
         all_good()
         main()
     else:
-        print('none value here')
+        print('None value - main add alumni')
         main()
 
 
@@ -117,6 +125,19 @@ def main_new_interaction():
         all_good()
         main()
     else:
+        print('None value - main new interaction')
+        main()
+        
+def update_basic_info():
+    alumni_df = get_updated_alumni_info.main()
+    print(alumni_df)
+    input('PAUSE - update_basic_info')
+    if isinstance(alumni_df, pd.DataFrame):
+        update_to_db.main(alumni_df)
+        all_good()
+        main()
+    else:
+        print('None value - update basic info')
         main()
 
 def main_export_id():
