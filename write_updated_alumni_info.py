@@ -7,19 +7,28 @@ Created on Thu Apr 29 12:08:34 2021
 
 import sqlite3
 from sqlite3 import Error
+import pandas as pd
 
 
 def main(alumni):
 
     alumni = alumni.applymap(str)
+    if 'last_name' in alumni.columns:
+        alumni = write_last_name(alumni)
+
+    if 'first_name' in alumni.columns:
+        alumni = write_first_name(alumni)
+
+    if 'birthday' in alumni.columns:
+        alumni = write_birthday(alumni)
+
 
     query = '''UPDATE Basic_Info '''
-
     for i, value in enumerate(alumni):
 
         if value != 'ID_number':
 
-            if i == 1:
+            if i == 1 and len(alumni.columns) > 1:
                 temp = '''SET ''' + value + ''' = \'''' + alumni.at[0, value] + '\', '
 
             elif i+1 == len(alumni.columns):
@@ -31,13 +40,66 @@ def main(alumni):
             query = query + temp
 
     where = ''' WHERE ID_number = ''' + str(alumni.at[0,'ID_number'])
-    temp_query = query + where
+    query = query + where
 
     connection = _db_connection()
     cursor = connection.cursor()
-    cursor.execute(temp_query)
+    cursor.execute(query)
     connection.commit()
     connection.close()
+
+
+def write_last_name(df):
+
+    query = '''UPDATE Alumni_ID '''
+    temp = '''SET last_name = \'''' + df.at[0, 'last_name'] + '\''
+    where = ''' WHERE ID_number = ''' + str(df.at[0,'ID_number'])
+    query = query + temp + where
+
+    connection = _db_connection()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+    connection.close()
+
+    df.drop(['last_name'], axis=1, inplace=True)
+
+    return df
+
+
+def write_first_name(df):
+
+    query = '''UPDATE Alumni_ID '''
+    temp = '''SET first_name = \'''' + df.at[0, 'first_name'] + '\''
+    where = ''' WHERE ID_number = ''' + str(df.at[0,'ID_number'])
+    query = query + temp + where
+
+    connection = _db_connection()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+    connection.close()
+
+    df.drop(['first_name'], axis=1, inplace=True)
+
+    return df
+
+def write_birthday(df):
+
+    query = '''UPDATE Alumni_ID '''
+    temp = '''SET birthday = \'''' + df.at[0, 'birthday'] + '\''
+    where = ''' WHERE ID_number = ''' + str(df.at[0,'ID_number'])
+    query = query + temp + where
+
+    connection = _db_connection()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+    connection.close()
+
+    df.drop(['birthday'], axis=1, inplace=True)
+
+    return df
 
 
 def _db_connection():
@@ -57,10 +119,13 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    # test_data = {'ID_number': 1001,
-    #          'first_name': 'Addison',
-    #          'last_name': 'Smith',
-    #          'gender': 'Female'}
-    # results = pd.DataFrame(test_data, index=[0])
-    # main(results)
-    main()
+    test_data = {'ID_number': 1007,
+              'first_name': 'Addison2',
+              'last_name': 'Smithson',
+              'gender': 'Female',
+              'city':'Some city',
+              'state':'New York',
+              'zipcode':15212}
+    results = pd.DataFrame(test_data, index=[0])
+    main(results)
+    # main()

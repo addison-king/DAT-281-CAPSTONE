@@ -13,7 +13,7 @@ import pandas as pd
 
 def main(df):
     """
-    Takes a dataframe from the main script. 
+    Takes a dataframe from the main script.
     Makes sure the date is in correct format.
     Writes the new information to the 'Contact_Events' table.
     Updates the newest date to the 'Last_Contact' table.
@@ -28,12 +28,13 @@ def main(df):
     None.
 
     """
-    
+
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
+
     new_event_to_db(df)
     update_last_contact(df)
-    
-    
+
+
 def new_event_to_db(df):
     connection = _db_connection()
     df.to_sql('Contact_Events', connection, index=False, if_exists='append')

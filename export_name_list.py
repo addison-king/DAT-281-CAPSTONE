@@ -14,27 +14,30 @@ import pandas as pd
 
 def main(location):
     print()
-    
-    query = ''' SELECT ID_number, first_name, last_name,
-                       graduation_year, CORE_student
-                FROM Basic_Info
+
+    query = ''' SELECT Alumni_ID.ID_number, first_name, last_name,
+                       graduation_year, CORE_student, birthday
+                FROM Alumni_ID
+                INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
                 ORDER BY last_name ASC
               '''
     connection = _db_connection()
     output = pd.read_sql(query, con=connection)
     connection.close()
-    
+
     col_names = ['ID Number', #Print friendly column names
                  'First Name',
                  'Last Name',
                  'Graduation Year',
-                 'CORE?']
+                 'CORE?',
+                 'Birthday']
+
     output.cloumns = col_names #rename the df col names
     file_name = 'Master Alumni List.csv'
     os.chdir(location)
     output.to_csv(file_name, index=False, encoding='utf-8')
-    
-    
+
+
 def _db_connection():
     '''
     Connects to the .db file

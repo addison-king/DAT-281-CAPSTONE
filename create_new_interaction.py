@@ -57,6 +57,7 @@ def main():
 def format_df(df):
     df = df[['ID_number','last_name', 'first_name', 'contact_date',
              'spoke', 'track', 'status', 'notes']]
+    df.drop(['first_name', 'last_name'], axis=1, inplace=True)
     df = df.fillna('None')
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
 
@@ -210,8 +211,9 @@ def lookup_alumni():
 
 def sql_lookup_name(first, last):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
                WHERE first_name = :first and last_name = :last
             '''
     connection = _db_connection()
@@ -228,9 +230,10 @@ def sql_lookup_name(first, last):
 
 def sql_lookup_num(id_num):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
-               WHERE ID_number = :id
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
+               WHERE Alumni_ID.ID_number = :id
             '''
     connection = _db_connection()
     results = pd.read_sql(query,

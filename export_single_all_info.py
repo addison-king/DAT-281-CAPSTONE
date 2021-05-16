@@ -16,7 +16,9 @@ def main():
 
     alumni_number = lookup_alumni()
     if alumni_number != None:
+        alumni_base_ID = base_ID(alumni_number)
         alumni_basic = basic_info(alumni_number)
+        alumni_basic = combine_df(alumni_base_ID, alumni_basic)
         alumni_contacts = contact_events(alumni_number)
         print_it(alumni_basic, alumni_contacts)
 
@@ -42,6 +44,41 @@ class PDF(FPDF):
         # Page number
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 
+
+def base_ID(alumni_number):
+
+    query = '''SELECT *
+               FROM Alumni_ID
+               WHERE ID_number = :id
+            '''
+    connection = _db_connection()
+    results = pd.read_sql(query,
+                          con=connection,
+                          params={'id':alumni_number})
+    connection.close()
+    results = format_base_ID(results)
+
+    return results
+
+
+def format_base_ID(df):
+    df = df.applymap(str)
+
+    cols = df.columns.tolist()
+    cols = [i.title() for i in df]
+
+    for index, item in enumerate(cols):
+        cols[index] = item.replace('_', ' ')
+
+    df.columns = cols
+    df.rename(columns = {'Id Number': 'ID Number'}, inplace = True)
+
+    df = df[['First Name', 'Last Name', 'ID Number', 'Birthday']]
+
+    # for i in df.columns:
+    #     print(i, ' - ', df.at[0,i])
+
+    return df
 
 def basic_info(alumni_number):
 
@@ -78,19 +115,35 @@ def format_basic_info(df):
                          'Parent Guardian Email': 'P|G Email'},
                   inplace = True)
 
-    df = df[['First Name','Last Name','ID Number','Core Student',
-             'Graduation Year','Phone Number','Email','Birthday','Gender',
-             'Street Address','City','State','Zipcode','Church','Highschool',
-             'College','Job','Special Health Concerns','Parent | Guardian',
-             'P|G Phone Number','P|G Email','Emergency Contact',
-             'Emergency Contact Phone Number','Options','Education',
-             'Athletics','Performing Arts']]
+    df = df[['Core Student', 'Graduation Year','Phone Number','Email',
+             'Gender','Street Address','City','State','Zipcode','Church',
+             'Highschool','College','Job','Special Health Concerns',
+             'Parent | Guardian','P|G Phone Number','P|G Email',
+             'Emergency Contact','Emergency Contact Phone Number','Options',
+             'Education','Athletics','Performing Arts']]
 
     # for i in df.columns:
     #     print(i, ' - ', df.at[0,i])
+    # input()
 
     return df
 
+
+def combine_df(base_ID, basic):
+    # for i in base_ID.columns:
+    #     print(i, ' - ', base_ID.at[0,i])
+    # input('BASE_ID')
+
+    # for i in basic.columns:
+    #     print(i, ' - ', basic.at[0,i])
+    # input('basic')
+
+    df = base_ID.join(basic)
+    # for i in df.columns:
+    #     print(i, ' - ', df.at[0,i])
+    # input('MERGED')
+
+    return df
 
 def contact_events(alumni_number):
     query = '''SELECT *
@@ -267,8 +320,9 @@ def print_it(alumni_basic, alumni_contacts):
 
 def sql_lookup_name(first, last):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
                WHERE first_name = :first and last_name = :last
             '''
     connection = _db_connection()
@@ -285,9 +339,10 @@ def sql_lookup_name(first, last):
 
 def sql_lookup_num(id_num):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
-               WHERE ID_number = :id
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
+               WHERE Alumni_ID.ID_number = :id
             '''
     connection = _db_connection()
     results = pd.read_sql(query,

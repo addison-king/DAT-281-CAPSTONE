@@ -395,6 +395,17 @@ def text_new_alumni_p1():
     return values
 
 def text_new_alumni_p2():
+    states = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado',
+                'Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho',
+                'Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana',
+                'Maine','Maryland','Massachusetts','Michigan','Minnesota',
+                'Mississippi','Missouri','Montana','Nebraska','Nevada',
+                'New Hampshire','New Jersey','New Mexico','New York',
+                'North Carolina','North Dakota','Ohio','Oklahoma','Oregon',
+                'Pennsylvania','Rhode Island','South Carolina','South Dakota',
+                'Tennessee','Texas','Utah','Vermont','Virginia','Washington',
+                'West Virginia','Wisconsin','Wyoming']
+
     frame_birthday = [[sg.In(key='bday_month', size=(3,1),
                          change_submits=True, do_not_clear=True),
                    sg.T('-', pad=(0,0)),
@@ -416,7 +427,7 @@ def text_new_alumni_p2():
 
     frame_state = [[sg.Radio('Pennsylvania', 'state', key='state_pa', default=True),
                     sg.Radio('Other', 'state', key='state_other', enable_events=True),
-                    sg.In(key='state_input', size=(23,1))]]
+                    sg.Combo(states, key='state_input')]]
 
     frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212', default=True),
                       sg.Radio('Other', 'zipcode', key='zipcode_other', enable_events=True),

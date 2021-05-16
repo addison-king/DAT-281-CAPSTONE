@@ -229,7 +229,7 @@ def clean_page_2(values):
         values.pop('zipcode_other')
         values.pop('zipcode_input')
     elif values['zipcode_other'] == True:
-        values['zipcode'] == values['zipcode_input']
+        values['zipcode'] = values['zipcode_input']
         values.pop('zipcode_15212')
         values.pop('zipcode_other')
         values.pop('zipcode_input')
@@ -362,7 +362,11 @@ def text_new_alumni_p1(alumni):
                                  change_submits=True, do_not_clear=True),
                        sg.T('', key='error_grad_year', text_color='purple', size=(26,1))]]
 
-    number = alumni.at[0,'phone_num'].split('-')
+    if alumni.at[0,'phone_num'] == '':
+        number = ['','','']
+    else:
+        number = alumni.at[0,'phone_num'].split('-')
+
     frame_phone_number = [[sg.In(key='phone1', size=(4,1),
                                  default_text=number[0],
                                  change_submits=True, do_not_clear=True),
@@ -459,6 +463,18 @@ def text_new_alumni_p1(alumni):
     return values
 
 def text_new_alumni_p2(alumni):
+
+    states = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado',
+            'Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho',
+            'Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana',
+            'Maine','Maryland','Massachusetts','Michigan','Minnesota',
+            'Mississippi','Missouri','Montana','Nebraska','Nevada',
+            'New Hampshire','New Jersey','New Mexico','New York',
+            'North Carolina','North Dakota','Ohio','Oklahoma','Oregon',
+            'Pennsylvania','Rhode Island','South Carolina','South Dakota',
+            'Tennessee','Texas','Utah','Vermont','Virginia','Washington',
+            'West Virginia','Wisconsin','Wyoming']
+
     birthday = alumni.at[0,'birthday'].split('-')
     frame_birthday = [[sg.In(key='bday_month', size=(3,1),
                              default_text=birthday[1],
@@ -502,8 +518,8 @@ def text_new_alumni_p2(alumni):
         frame_state = [[sg.Radio('Pennsylvania', 'state', key='state_pa'),
                         sg.Radio('Other', 'state', key='state_other',
                                  default=True, enable_events=True),
-                        sg.In(key='state_input', size=(23,1),
-                              default_text=alumni.at[0, 'state'])]]
+                        sg.Combo(states, key='state_input',
+                              default_value=alumni.at[0, 'state'])]]
 
     if alumni.at[0, 'zipcode'] == 15212:
         frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212',
@@ -711,7 +727,11 @@ def text_new_alumni_p4(alumni):
     frame_parent = [[sg.In(key='parent',
                            default_text=alumni.at[0,'parent_guardian'])]]
 
-    pg_phone = alumni.at[0,'parent_guardian_phone_num'].split('-')
+    if alumni.at[0,'parent_guardian_phone_num'] == '':
+        pg_phone = ['','','']
+    else:
+        pg_phone = alumni.at[0,'parent_guardian_phone_num'].split('-')
+
     frame_parent_phone = [[sg.In(key='parent_phone1', size=(4,1),
                                  change_submits=True, do_not_clear=True,
                                  default_text=pg_phone[0]),
@@ -733,7 +753,11 @@ def text_new_alumni_p4(alumni):
                                             key='e_parent',
                                             enable_events=True)]]
 
-    e_phone = alumni.at[0,'emergency_contact_phone_number'].split('-')
+    if alumni.at[0,'emergency_contact_phone_number'] == '':
+        e_phone = ['','','']
+    else:
+        e_phone = alumni.at[0,'emergency_contact_phone_number'].split('-')
+
     frame_emergency_phone = [[sg.In(key='e_phone1', size=(4,1),
                                  change_submits=True, do_not_clear=True,
                                  default_text=e_phone[0]),
@@ -991,7 +1015,8 @@ def lookup_alumni():
 def get_alumni_data(id_num):
     query = '''SELECT *
                 FROM Basic_Info
-                WHERE ID_number = :id
+                INNER JOIN Alumni_ID on Alumni_ID.ID_number = Basic_Info.ID_number
+                WHERE Alumni_ID.ID_number = :id
              '''
     connection = _db_connection()
     results = pd.read_sql(query,
@@ -1003,8 +1028,9 @@ def get_alumni_data(id_num):
 
 def sql_lookup_name(first, last):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
                WHERE first_name = :first and last_name = :last
             '''
     connection = _db_connection()
@@ -1021,9 +1047,10 @@ def sql_lookup_name(first, last):
 
 def sql_lookup_num(id_num):
 
-    query = '''SELECT first_name, last_name, graduation_year, birthday, ID_number
-               FROM Basic_Info
-               WHERE ID_number = :id
+    query = '''SELECT first_name, last_name, graduation_year, birthday, Alumni_ID.ID_number
+               FROM Alumni_ID
+               INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
+               WHERE Alumni_ID.ID_number = :id
             '''
     connection = _db_connection()
     results = pd.read_sql(query,

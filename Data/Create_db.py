@@ -32,7 +32,6 @@ def _create_db_table():
                         CORE_student text,
                         graduation_year integer,
                         phone_num text,
-                        birthday text,
                         gender text,
                         address text,
                         city text,

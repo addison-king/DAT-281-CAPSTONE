@@ -108,6 +108,7 @@ def main():
 def main_add_alum():
 #GUI which the user enters new alum data.
     alumni_df = create_new_alumni.main()
+
 #If the user selected 'Cancel' then it returns None and 'else' goes to main.
     if isinstance(alumni_df, pd.DataFrame):
         alumni_to_db.main(alumni_df)
