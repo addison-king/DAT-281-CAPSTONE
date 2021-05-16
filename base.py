@@ -22,6 +22,7 @@ import export_name_list #exports a .csv file with full list of names from db
 import export_call_list #exports a .csv file with a list of alumni to contact next
 import export_single_all_info #exports a .pdf file with all information on one alumni
 import get_updated_alumni_info #prompts the user to input new changes to an alumni
+import write_updated_alumni_info #all changes to an alumni are writte to the db
 
 
 def main():
@@ -79,7 +80,7 @@ def main():
         elif event[0] == 'interaction':
             window.close()
             main_new_interaction()
-        
+
         elif event[0] == 'update_basic':
             window.close()
             update_basic_info()
@@ -127,13 +128,11 @@ def main_new_interaction():
     else:
         print('None value - main new interaction')
         main()
-        
+
 def update_basic_info():
     alumni_df = get_updated_alumni_info.main()
-    print(alumni_df)
-    input('PAUSE - update_basic_info')
     if isinstance(alumni_df, pd.DataFrame):
-        update_to_db.main(alumni_df)
+        write_updated_alumni_info.main(alumni_df)
         all_good()
         main()
     else:

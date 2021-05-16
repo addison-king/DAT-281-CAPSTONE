@@ -15,63 +15,77 @@ from datetime import datetime
 
 def main():
     alumni = None
+    values_page_1 = None
+    values_page_2 = None
+    values_page_3 = None
+    values_page_4 = None
+    values_page_5 = None
+
     alumni = lookup_alumni() #DICTIONARY
-    id_num = alumni['ID_number']
-    full_info = get_alumni_data(alumni['ID_number']) #DATAFRAME
+    if alumni != None:
+        id_num = alumni['ID_number']
+        full_info = get_alumni_data(alumni['ID_number']) #DATAFRAME
 
+        values_page_1 = text_new_alumni_p1(full_info)
+        if values_page_1 != None:
+            values_page_2 = text_new_alumni_p2(full_info)
+        if values_page_2 != None:
+            values_page_3 = text_new_alumni_p3(full_info)
+        if values_page_3 != None:
+            values_page_4 = text_new_alumni_p4(full_info)
+        if values_page_4 != None:
+            values_page_5 = text_new_alumni_p5(full_info)
 
-    # for col in full_info.columns:
-    #     print(col)
+        if not None in [values_page_1, values_page_2, values_page_3,
+                        values_page_4, values_page_5]:
+            values_page_1 = clean_page_1(values_page_1)
+            values_page_2 = clean_page_2(values_page_2)
+            values_page_3 = clean_page_3(values_page_3)
+            values_page_4 = clean_page_4(values_page_4)
+            values_page_5 = clean_page_5(values_page_5)
 
-    values_page_1 = text_new_alumni_p1(full_info)
-    if values_page_1 != None:
-        values_page_2 = text_new_alumni_p2(full_info)
-    if values_page_2 != None:
-        values_page_3 = text_new_alumni_p3(full_info)
-    if values_page_3 != None:
-        values_page_4 = text_new_alumni_p4(full_info)
-    if values_page_4 != None:
-        values_page_5 = text_new_alumni_p5(full_info)
-        
-    if not None in [values_page_1, values_page_2, values_page_3,
-                    values_page_4, values_page_5]:
-        values_page_1 = clean_page_1(values_page_1)
-        values_page_2 = clean_page_2(values_page_2)
-        values_page_3 = clean_page_3(values_page_3)
-        values_page_4 = clean_page_4(values_page_4)
-        values_page_5 = clean_page_5(values_page_5)
-#merge the 5 dictionaries together
-        alumni_values = merge_dicts(values_page_1, values_page_2,
-                                    values_page_3, values_page_4,
-                                    values_page_5)
+    #merge the 5 dictionaries together
+            alumni_values = merge_dicts(values_page_1, values_page_2,
+                                        values_page_3, values_page_4,
+                                        values_page_5)
 
-#convert the dictionary to a dataframe
-        alumni = pd.DataFrame([alumni_values], columns=alumni_values.keys())
+    #convert the dictionary to a dataframe
+            alumni = pd.DataFrame([alumni_values], columns=alumni_values.keys())
 
-#rename all cols and reorder cols
-        alumni = format_df(alumni)
-        
-#compare the old values to new ones. only keep new ones.
-        alumni.at[0, 'zipcode'] = int(alumni.at[0,'zipcode'])
+    #rename all cols and reorder cols
+            alumni = format_df(alumni)
 
-        alumni = compare_df(alumni, full_info, id_num)
-        if not isinstance(alumni, pd.DataFrame):
-            print('No changes. Quitting..')
+    #compare the old values to new ones. only keep new ones.
+            alumni.at[0, 'zipcode'] = int(alumni.at[0,'zipcode'])
+
+            alumni = compare_df(alumni, full_info, id_num)
+            if not isinstance(alumni, pd.DataFrame):
+                print('No changes. Quitting..')
+                no_changes()
+                return None
+
+            print(alumni)
+            return alumni
+
+        else:
+            print('None value. Quitting..')
             return None
-#Sanity check
-        # for i in alumni:
-        #     print(i, '-', alumni[i][0])
-        print(alumni)
-        return alumni
-
     else:
-        print('None value. Quitting..')
+        print('Cancel on lookup. Quitting..')
         return None
 
-    
 
-    # frame_id_number = [[sg.Input(key='id_num', default_text=alumni['ID_number'],
-    #                              change_submits=True, do_not_clear=True, readonly=True)]]
+def no_changes():
+    layout = [[sg.Text('No changes detected to write \nto the database.',
+               font=('Arial', 15))],
+              [sg.Button('Return to Main Menu', key='close')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+    while True:
+        event = window.read()
+        if event[0] in ('close', sg.WIN_CLOSED):
+            break
+    window.close()
+
 
 def compare_df(new_alumni, old_alumni, id_num):
     data = {'ID_number': id_num}
@@ -82,11 +96,11 @@ def compare_df(new_alumni, old_alumni, id_num):
             value = [new_alumni.at[0,i]]
             results[i] = value
 
-    if len(results) == 0:
+    if len(results.columns) == 1:
         results = None
-      
+
     return results
-    
+
 
 
 def merge_dicts(p1, p2, p3, p4, p5):
@@ -162,7 +176,7 @@ def clean_page_1(values):
     values.pop('phone3', None)
 
     values['phone_num'] = phone
-    
+
     values['grad_year'] = int(values['grad_year'])
 
     return values
@@ -208,7 +222,7 @@ def clean_page_2(values):
                     values['bday_day'])
     else:
         birthday = ''
-        
+
     if values['zipcode_15212'] == True:
         values['zipcode'] = 15212
         values.pop('zipcode_15212')
@@ -225,7 +239,7 @@ def clean_page_2(values):
     values.pop('bday_year', None)
 
     values['birthday'] = birthday
-    
+
     values['zipcode'] = int(values['zipcode'])
 
     return values
@@ -343,13 +357,13 @@ def text_new_alumni_p1(alumni):
         frame_core_student = [[sg.Radio('Yes', 'CORE', key='core_yes', default=True),
                                sg.Radio('No', 'CORE', key='core_no')]]
 
-    frame_grad_year = [[sg.Input(key='grad_year', size=(13,1), 
+    frame_grad_year = [[sg.Input(key='grad_year', size=(13,1),
                                  default_text=alumni.at[0, 'graduation_year'],
                                  change_submits=True, do_not_clear=True),
                        sg.T('', key='error_grad_year', text_color='purple', size=(26,1))]]
 
     number = alumni.at[0,'phone_num'].split('-')
-    frame_phone_number = [[sg.In(key='phone1', size=(4,1), 
+    frame_phone_number = [[sg.In(key='phone1', size=(4,1),
                                  default_text=number[0],
                                  change_submits=True, do_not_clear=True),
                            sg.T('-', pad=(0,0)),
@@ -475,7 +489,7 @@ def text_new_alumni_p2(alumni):
                        sg.In(key='city_input', size=(25,1))]]
     else:
         frame_city = [[sg.Radio('Pittsburgh', 'city', key='city_pgh'),
-                       sg.Radio('Other', 'city', key='city_other', 
+                       sg.Radio('Other', 'city', key='city_other',
                                 default=True, enable_events=True),
                        sg.In(key='city_input', size=(25,1),
                              default_text=alumni.at[0, 'city'])]]
@@ -486,13 +500,13 @@ def text_new_alumni_p2(alumni):
                         sg.In(key='state_input', size=(23,1))]]
     else:
         frame_state = [[sg.Radio('Pennsylvania', 'state', key='state_pa'),
-                        sg.Radio('Other', 'state', key='state_other', 
+                        sg.Radio('Other', 'state', key='state_other',
                                  default=True, enable_events=True),
                         sg.In(key='state_input', size=(23,1),
                               default_text=alumni.at[0, 'state'])]]
 
     if alumni.at[0, 'zipcode'] == 15212:
-        frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212', 
+        frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212',
                                    default=True, enable_events=True),
                           sg.Radio('Other', 'zipcode', key='zipcode_other', enable_events=True),
                           sg.In(key='zipcode_input', size=(6,1),
@@ -500,9 +514,9 @@ def text_new_alumni_p2(alumni):
                           sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
     else:
         frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212'),
-                          sg.Radio('Other', 'zipcode', key='zipcode_other', 
+                          sg.Radio('Other', 'zipcode', key='zipcode_other',
                                    enable_events=True, default=True),
-                          sg.In(key='zipcode', size=(6,1),
+                          sg.In(key='zipcode_input', size=(6,1),
                                 change_submits=True, do_not_clear=True, enable_events=True,
                                 default_text=alumni.at[0, 'zipcode']),
                           sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
@@ -560,9 +574,9 @@ def text_new_alumni_p2(alumni):
         if event == 'state_other':
             window['state_input'].SetFocus()
 
-        if event in ('bday_month', 'bday_day', 'bday_year', 'zipcode'):
+        if event in ('bday_month', 'bday_day', 'bday_year', 'zipcode_input'):
             window[event].Update(re.sub("[^0-9]", "", values[event]))
-            
+
         if event == 'zipcode_input':
             window[event].Update(re.sub("[^0-9]", "", values[event]))
 
@@ -608,28 +622,28 @@ def text_new_alumni_p2(alumni):
 
 def text_new_alumni_p3(alumni):
     if alumni.at[0, 'church'] == 'ACAC':
-        frame_church = [[sg.Radio('ACAC', 'church', key='church_acac', 
+        frame_church = [[sg.Radio('ACAC', 'church', key='church_acac',
                                   enable_events=True, default=True),
                          sg.Radio('None', 'church', key='church_none', enable_events=True)],
                          [sg.Radio('Other', 'church', key='church_other', enable_events=True),
                           sg.In(key='church_input')]]
     elif alumni.at[0, 'church'] == 'None':
         frame_church = [[sg.Radio('ACAC', 'church', key='church_acac', enable_events=True),
-                         sg.Radio('None', 'church', key='church_none', 
+                         sg.Radio('None', 'church', key='church_none',
                                   enable_events=True, default=True)],
                          [sg.Radio('Other', 'church', key='church_other', enable_events=True),
                           sg.In(key='church_input')]]
     else:
         frame_church = [[sg.Radio('ACAC', 'church', key='church_acac', enable_events=True),
                          sg.Radio('None', 'church', key='church_none', enable_events=True)],
-                         [sg.Radio('Other', 'church', key='church_other', 
+                         [sg.Radio('Other', 'church', key='church_other',
                                    enable_events=True, default=True),
-                          sg.In(key='church_input', 
+                          sg.In(key='church_input',
                                 default_text=alumni.at[0, 'church'])]]
 
     frame_highschool = [[sg.In(key='highschool', size=(55,1),
                                default_text=alumni.at[0,'highschool'])]]
-    
+
     frame_college = [[sg.In(key='college', size=(55,1),
                             default_text=alumni.at[0, 'college'])]]
 
@@ -693,10 +707,10 @@ def text_new_alumni_p3(alumni):
 
 
 def text_new_alumni_p4(alumni):
-    
-    frame_parent = [[sg.In(key='parent', 
+
+    frame_parent = [[sg.In(key='parent',
                            default_text=alumni.at[0,'parent_guardian'])]]
-    
+
     pg_phone = alumni.at[0,'parent_guardian_phone_num'].split('-')
     frame_parent_phone = [[sg.In(key='parent_phone1', size=(4,1),
                                  change_submits=True, do_not_clear=True,
@@ -709,16 +723,16 @@ def text_new_alumni_p4(alumni):
                            sg.In(key='parent_phone3', size=(5,1),
                                  change_submits=True, do_not_clear=True,
                                  default_text=pg_phone[2])]]
-    
+
     frame_parent_email = [[sg.In(key='parent_email',
                                  default_text=alumni.at[0, 'parent_guardian_email'])]]
-    
+
     frame_emergency_contact = [[sg.In(key='e_contact',
                                       default_text=alumni.at[0, 'emergency_contact'])],
                                [sg.Checkbox('Use Parent/Guardian name from above',
                                             key='e_parent',
                                             enable_events=True)]]
-    
+
     e_phone = alumni.at[0,'emergency_contact_phone_number'].split('-')
     frame_emergency_phone = [[sg.In(key='e_phone1', size=(4,1),
                                  change_submits=True, do_not_clear=True,
@@ -824,7 +838,7 @@ def text_new_alumni_p5(alumni):
                       sg.Radio('No', 'options', key='options_no', default=True)]]
 
     if alumni.at[0, 'education'] == 'Yes':
-        frame_education = [[sg.Radio('Yes', 'education', key='education_yes', 
+        frame_education = [[sg.Radio('Yes', 'education', key='education_yes',
                                      default=True),
                             sg.Radio('No', 'education', key='education_no')]]
     else:
@@ -891,12 +905,12 @@ def text_new_alumni_p5(alumni):
     window.close()
 
     return values
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
 def lookup_alumni():
 
     frame_id_number = [[sg.Input(key='id_num',
@@ -917,6 +931,7 @@ def lookup_alumni():
     window = sg.Window('UIF: Alumni Database', layout)
     while True:
         event, values = window.read()
+        window['id_num'].SetFocus()
 
         if event in ('Cancel', sg.WIN_CLOSED):
             result = None

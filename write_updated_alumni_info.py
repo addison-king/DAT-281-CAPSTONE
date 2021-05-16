@@ -7,13 +7,11 @@ Created on Thu Apr 29 12:08:34 2021
 
 import sqlite3
 from sqlite3 import Error
-import pandas as pd
-import PySimpleGUI as sg
-import re
-from re import search
-from datetime import datetime
+
 
 def main(alumni):
+
+    alumni = alumni.applymap(str)
 
     query = '''UPDATE Basic_Info '''
 
@@ -42,8 +40,6 @@ def main(alumni):
     connection.close()
 
 
-
-
 def _db_connection():
     '''
     Connects to the .db file
@@ -59,10 +55,12 @@ def _db_connection():
         print(Error)
     return connection
 
+
 if __name__ == "__main__":
-    test_data = {'ID_number': 1001,
-             'first_name': 'Addison',
-             'last_name': 'Smith',
-             'gender': 'Female'}
-    results = pd.DataFrame(test_data, index=[0])
-    main(results)
+    # test_data = {'ID_number': 1001,
+    #          'first_name': 'Addison',
+    #          'last_name': 'Smith',
+    #          'gender': 'Female'}
+    # results = pd.DataFrame(test_data, index=[0])
+    # main(results)
+    main()
