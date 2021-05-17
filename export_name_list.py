@@ -33,7 +33,7 @@ def main(location):
                  'Birthday']
 
     output.cloumns = col_names #rename the df col names
-    file_name = 'Master Alumni List.csv'
+    file_name = 'Alumni List.csv'
     os.chdir(location)
     output.to_csv(file_name, index=False, encoding='utf-8')
 

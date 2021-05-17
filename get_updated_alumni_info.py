@@ -931,10 +931,6 @@ def text_new_alumni_p5(alumni):
     return values
 
 
-
-
-
-
 def lookup_alumni():
 
     frame_id_number = [[sg.Input(key='id_num',

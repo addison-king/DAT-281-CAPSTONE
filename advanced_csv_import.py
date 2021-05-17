@@ -45,6 +45,7 @@ def new_alumni_gui(location):
         event = window.read()
         if event[0] == 'import':
             window.close()
+            sg.popup_ok('This may take a few seconds.\nPlease be patient.')
             import_alumni_p1(location)
 
         elif event[0] in  (sg.WIN_CLOSED, 'cancel', 'main'):
@@ -154,7 +155,7 @@ def import_alumni_p2(alumni):
 def import_alumni_p3(id_df):
 #initialize all the new alumni to the "Last_Contact" Table
 
-    query = '''SELECT ID_number, graduation_year
+    query = '''SELECT ID_number, graduation_year, job
                 FROM Basic_Info
                 WHERE ID_number = :id'''
 
@@ -169,21 +170,35 @@ def import_alumni_p3(id_df):
         connection.close()
 
         col_names = ['ID_number',
-                     'graduation_year']
+                     'graduation_year',
+                     'occupation']
         output.columns = col_names
+
+        if output.at[0, 'occupation'] != 'None':
+            data = ['Yes']
+            output['currently_employed'] = data
+        else:
+            data = ['No']
+            output['currently_employed'] = data
+
         for i in output.index:
             last_date = str(output.at[i, 'graduation_year'])
-            last_date = last_date + '-06-01'
+            last_date = last_date + '-01-01'
             output.at[i, 'last_date'] = last_date
 
         output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
         output.drop(columns=['graduation_year'], inplace = True)
         output = output[['ID_number',
-                         'last_date']]
+                         'last_date',
+                         'currently_employed',
+                         'occupation']]
+
         connection = _db_connection()
 
         output.to_sql('Last_Contact', connection, index=False,
                         if_exists='append')
+        connection.commit()
+        connection.close()
 
 
 def select_file():

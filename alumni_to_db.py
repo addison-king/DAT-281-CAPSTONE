@@ -184,7 +184,7 @@ def initialize_last_contact(df):
 
 #This creates a 'last_date' value that is equal to June 1, grad_year
         last_date = str(output.loc[i, 'graduation_year'])
-        last_date = last_date + '-06-01'
+        last_date = last_date + '-01-01'
         output.at[i, 'last_date'] = last_date
 
 #convert value to datetime
