@@ -35,7 +35,8 @@ def main():
         else:
             values_p2 = interaction_p2() #DICTIONARY
             values_p2_truth = True
-
+            
+    
     if not None in [alumni, values_p1, values_p2]:
         if values_p2_truth == True:
             values_p1 = clean_page_1(values_p1)
@@ -51,12 +52,15 @@ def main():
     else:
         print('None value. Quit.')
         result = None
-
+    # print(result)
+    for i in result:
+        print(i, result.at[0,i])
     return result
 
 def format_df(df):
     df = df[['ID_number','last_name', 'first_name', 'contact_date',
-             'spoke', 'track', 'status', 'notes']]
+             'spoke', 'track', 'status','currently_employed', 'occupation', 
+             'notes']]
     df.drop(['first_name', 'last_name'], axis=1, inplace=True)
     df = df.fillna('None')
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
@@ -128,8 +132,15 @@ def clean_page_2(values):
                     new = key.replace('status_','')
                     new = new.replace('_', ' ').title()
                     clean['status'] = new
+    if values['employed_yes'] == True:
+        clean['currently_employed'] = 'Yes'
+        clean['occupation'] = values['occupation']
+    elif values['employed_no'] == True:
+        clean['currently_employed'] = 'No'
+        clean['occupation'] = None
+        
     clean['notes'] = values['notes'].strip('\n')
-
+    
     return clean
 
 
@@ -382,11 +393,18 @@ def interaction_p2():
                       sg.Radio('Unemployed', 'status', key='status_unemployed', enable_events=True)],
                     [sg.Radio('Other', 'status', key='status_other', enable_events=True),
                       sg.In(key='status_other_input')]]
+    
+    frame_occupation = [[sg.Txt('Currently working?'), 
+                         sg.Radio('Yes', 'employed', key='employed_yes', enable_events=True),
+                         sg.Radio('No', 'employed', key='employed_no', enable_events=True)],
+                        [sg.Txt('If working, current occupation'),
+                         sg.In(key='occupation')]]
 
     frame_notes = [[sg.Multiline(key='notes', size=(53,4))]]
 
     layout = [[sg.Frame('Post-Secondary Activity', frame_track)],
               [sg.Frame('Activity Status', frame_status)],
+              [sg.Frame('Occupation', frame_occupation)],
               [sg.Frame('Notes', frame_notes)],
               [sg.OK(), sg.Cancel()]]
 
@@ -405,6 +423,12 @@ def interaction_p2():
 
         elif event == 'status_other':
             window['status_other_input'].SetFocus()
+        
+        elif event == 'employed_yes':
+            window['occupation'].SetFocus()
+            
+        elif event == 'employed_no':
+            window['notes'].SetFocus()
 
         elif event == 'OK':
             if sum([values['track_college'], values['track_military'],
@@ -417,9 +441,13 @@ def interaction_p2():
                       values['status_graduated'], values['status_full_time'],
                       values['status_part_time'], values['status_unemployed'],
                       values['status_other']]) == 0:
-                sg.popup_ok('Please select a Activity Status option.')
+                sg.popup_ok('Please select an Activity Status option.')
             elif values['status_other'] == True and len(values['status_other_input']) == 0:
                 sg.popup_ok('Please fill in the Activity Status\n\"Other\" text field.')
+            elif sum([values['employed_yes'], values['employed_no']]) == 0:
+                sg.popup_ok('Please select \"Yes\" or \"No\" if they \nare currently working.')
+            elif values['employed_yes'] == True and len(values['occupation']) == 0:
+                sg.popup_ok('Please fill in the current occupation field.')
             else:
                 break
 
@@ -445,7 +473,7 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    #main()
-    test = main()
-    print(test)
-    print('\n',type(test)) #Dataframe
+    main()
+    # test = main()
+    # print(test)
+    # print('\n',type(test)) #Dataframe

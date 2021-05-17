@@ -69,8 +69,9 @@ def _create_db_table():
                         )'''
     sql_table_last_d = '''CREATE table IF NOT EXISTS Last_Contact (
                             ID_number integer PRIMARY KEY AUTOINCREMENT,
-                            last_date text
-
+                            last_date text,
+                            currently_employed text,
+                            occupation text
                         )'''
     sql_i_row = ''' INSERT INTO Alumni_ID (ID_number, last_name)
                     VALUES (1000, 'Test')

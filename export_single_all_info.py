@@ -30,7 +30,7 @@ class PDF(FPDF):
         self.name = name
 
     def header(self):
-        self.image('UIF-Logo.png', x=10, y=0, h=30)
+        self.image('Data\\UIF-Logo.png', x=10, y=0, h=30)
         self.set_font('Arial', 'B', 20)
         self.cell(0, 15, self.name, 'B', 0, 'C')
         self.ln(15)

@@ -30,9 +30,24 @@ def main(df):
     """
 
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
+    
+    contact_df = split_contact_events(df)
+    last_df = split_last_contact(df)
+    
+    new_event_to_db(contact_df)
+    update_last_contact(last_df)
 
-    new_event_to_db(df)
-    update_last_contact(df)
+
+def split_contact_events(df):
+    result = df[['ID_number', 'contact_date', 'spoke', 'track',
+                 'status', 'notes']]
+    return result
+
+
+def split_last_contact(df):
+    result = df[['ID_number', 'contact_date', 'currently_employed', 
+                 'occupation']]
+    return result
 
 
 def new_event_to_db(df):
@@ -46,10 +61,16 @@ def update_last_contact(df):
                      FROM Last_Contact
                      WHERE ID_number = :id
                  '''
-    query_write = '''UPDATE Last_Contact
-                     SET last_date = ?
+    query_write_1 = '''UPDATE Last_Contact
+                     SET last_date = ?,
+                         currently_employed = ?,
+                         occupation = ?
                      WHERE ID_number = ?
                   '''
+    query_write_2 = '''UPDATE Basic_Info
+                     SET job = ?
+                     WHERE ID_number = ?
+                  '''              
     connection = _db_connection()
     cursor = connection.cursor()
     for i in df.index:
@@ -59,9 +80,14 @@ def update_last_contact(df):
                               con=connection,
                               params={'id':id_num})
 
-        if date_df.iloc[0]['last_date'] < df.iloc[i]['contact_date']:
-            cursor.execute(query_write,
-                           (df.iloc[i]['contact_date'], id_num))
+
+        if date_df.at[i, 'last_date'] < df.at[i, 'contact_date']:
+            cursor.execute(query_write_1,
+                           (df.at[i, 'contact_date'], 
+                            df.at[i, 'currently_employed'], 
+                            df.at[i, 'occupation'], id_num))
+            cursor.execute(query_write_2,
+                           (df.iloc[i]['occupation'], id_num))
             connection.commit()
         else:
             print(df.iloc[i]['contact_date'], 'is too old..')
@@ -84,13 +110,14 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    # df = pd.DataFrame({'ID_number':1004,
-    #                       'last_name':'Jackson',
-    #                       'first_name':'Jack',
-    #                       'contact_date':'2021-04-20',
-    #                       'spoke':'Yes',
-    #                       'status':'Poor',
-    #                       'need':'No',
-    #                       'notes':'lorem ipsum.'},
-    #                     index=[0])
-    main()
+    df = pd.DataFrame({'ID_number':1001,
+                          'contact_date':'2020-04-20',
+                          'spoke':'Yes',
+                          'track':'College',
+                          'status': 'On Track',
+                          'currently_employed': 'Yes',
+                          'occupation':'Processor',
+                          'notes':'lorem ipsum.'},
+                        index=[0])
+    main(df)
+    # main()
