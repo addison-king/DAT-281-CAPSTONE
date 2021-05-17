@@ -24,6 +24,7 @@ import export_single_all_info #exports a .pdf file with all information on one a
 import get_updated_alumni_info #prompts the user to input new changes to an alumni
 import write_updated_alumni_info #all changes to an alumni are writte to the db
 import advanced_query #gui window where you can query the DB
+import advanced_csv_import #ability to import a csv of new alumni
 
 
 def main():
@@ -103,7 +104,7 @@ def main():
             export_single_all_info.main()
             # all_good()
             main()
-        
+
         elif event[0] == 'advanced':
             window.close()
             main_advanced()
@@ -186,17 +187,18 @@ def main_advanced():
                      size=(30,1))]]
 
     window = sg.Window('UIF: Alumni Database', layout)
-    
+
     while True:
         event = window.read()
 
         if event[0] == 'csv':
             window.close()
-            #csv python file
+            advanced_csv_import.main()
 
         elif event[0] == 'query':
             window.close()
             advanced_query.main()
+            all_good()
 
         elif event[0] in ('main', sg.WIN_CLOSED):
             break

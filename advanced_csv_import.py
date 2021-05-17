@@ -18,8 +18,8 @@ def main():
     location = select_file()
     if location is not None:
         new_alumni_gui(location)
-    
-    
+
+
 def new_alumni_gui(location):
     alumni_display = pd.read_csv(location)
 
@@ -51,7 +51,7 @@ def new_alumni_gui(location):
             window.close()
             break
     window.close()
-    
+
 
 def import_alumni_p1(location):
 
@@ -64,7 +64,7 @@ def import_alumni_p1(location):
                 "parent_guardian_email", "emergency_contact",
                 "emergency_contact_phone_number", "OPTIONS", "education",
                 "athletics", "performing_arts"]
-    
+
     alumni.columns = col_names
     title_case_list = ['address',
                        'city',
@@ -84,7 +84,7 @@ def import_alumni_p1(location):
                 WHERE last_name= :last AND first_name= :first AND birthday= :bday
                 GROUP BY last_name
                 '''
-                
+
     connection = _db_connection()
     for i in alumni.index:
         last_name = alumni.loc[i,'last_name']
@@ -108,8 +108,8 @@ def import_alumni_p1(location):
     connection.commit()
     connection.close()
     import_alumni_p2(alumni)
-    
-    
+
+
 def import_alumni_p2(alumni):
 #import alumni now that IDs have been assigned
     if len(alumni) != 0:
@@ -120,7 +120,7 @@ def import_alumni_p2(alumni):
                             birthday= :bday
                             '''
         connection = _db_connection()
-        id_df = pd.DataFrame(columns=['ID_number'])
+        id_list = []
         for i in alumni.index:
             last_name = alumni.loc[i, 'last_name']
             first_name = alumni.loc[i, 'first_name']
@@ -139,34 +139,33 @@ def import_alumni_p2(alumni):
                 new.drop(['last_name', 'first_name', 'birthday'], axis=1, inplace=True)
                 new.to_sql('Basic_Info', connection, index=False,
                               if_exists='append')
-                df = new[['ID_number']]
-                id_df = id_df.append(df)
+                id_list.append(alum_num)
             else:
                 print('DF error. length of:', len(sq_df))
 
         connection.commit()
         connection.close()
-        
-        print(id_df)
-        input('PAUSE - df check')
-        import_alumni_p3(df)
+
+        id_df = pd.DataFrame({'ID_number': id_list})
+        import_alumni_p3(id_df)
     else:
         print('Nothing to add.')
 
 def import_alumni_p3(id_df):
 #initialize all the new alumni to the "Last_Contact" Table
-    
-    query = ''' SELECT Alumni_ID.ID_number, graduation_year
-                FROM Alumni_ID
-                INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
-                WHERE Alumni_ID.ID_number = :id_num
-                ORDER BY last_name ASC
-              '''
-    for i in id_df:
+
+    query = '''SELECT ID_number, graduation_year
+                FROM Basic_Info
+                WHERE ID_number = :id'''
+
+    for i in id_df.index:
         connection = _db_connection()
-        output = pd.read_sql(query, 
-                             con=connection, 
-                             params={'id_num' = id_df.at[0, 'ID_number']})
+
+        id_num = int(id_df.at[i, 'ID_number'])
+
+        output = pd.read_sql(query,
+                              con=connection,
+                              params={'id':id_num})
         connection.close()
 
         col_names = ['ID_number',
@@ -176,7 +175,7 @@ def import_alumni_p3(id_df):
             last_date = str(output.at[i, 'graduation_year'])
             last_date = last_date + '-06-01'
             output.at[i, 'last_date'] = last_date
-    
+
         output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
         output.drop(columns=['graduation_year'], inplace = True)
         output = output[['ID_number',
@@ -185,8 +184,8 @@ def import_alumni_p3(id_df):
 
         output.to_sql('Last_Contact', connection, index=False,
                         if_exists='append')
-        
-    
+
+
 def select_file():
     layout = [[sg.Text('Folder Location')],
               [sg.Input(), sg.FileBrowse()],
@@ -198,7 +197,7 @@ def select_file():
     if values[1][0] != '':
         return values[1][0]
     return None
-    
+
 
 def _db_connection():
     '''
@@ -215,6 +214,6 @@ def _db_connection():
         print(Error)
     return connection
 
-    
+
 if __name__ == "__main__":
     main()
