@@ -1,0 +1,220 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 12 09:17:14 2021
+Developed for UIF to more easily handle the growing number of alumni they have,
+    and to track interactions with said alumni.
+Final Project for CCAC DAT-281
+@author: BKG
+"""
+import PySimpleGUI as sg
+import os
+import sys
+import sqlite3
+from sqlite3 import Error
+import pandas as pd
+
+def main():
+    print()
+    location = select_file()
+    if location is not None:
+        new_alumni_gui(location)
+    
+    
+def new_alumni_gui(location):
+    alumni_display = pd.read_csv(location)
+
+    display_cols = ['Last Name',
+                    'First Name',
+                    'Graduation Year']
+    alumni_display = alumni_display[display_cols]
+    data = alumni_display.values.tolist()
+    header_list = alumni_display.columns.tolist()
+
+    layout = [[sg.Text('The following alumni will be added to the database:\n')],
+              [sg.Table(values=data,
+                  headings=header_list,
+                  display_row_numbers=True,
+                  auto_size_columns=True,
+                  num_rows=min(25, len(data)))],
+              [sg.Button('Confirm', key='import')],
+              [sg.Button('Cancel', key='cancel')],
+              [sg.Button('Main Menu', key='main')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+
+    while True:
+        event = window.read()
+        if event[0] == 'import':
+            window.close()
+            import_alumni_p1(location)
+
+        elif event[0] in  (sg.WIN_CLOSED, 'cancel', 'main'):
+            window.close()
+            break
+    window.close()
+    
+
+def import_alumni_p1(location):
+
+    alumni = pd.read_csv(location)
+
+    col_names = ["last_name", "first_name", "CORE_student","graduation_year",
+                "phone_num", "birthday", "gender", "address", "city", "state",
+                "zipcode", "email", "church", "highschool", "college", "job",
+                "health_info", "parent_guardian", "parent_guardian_phone_num",
+                "parent_guardian_email", "emergency_contact",
+                "emergency_contact_phone_number", "OPTIONS", "education",
+                "athletics", "performing_arts"]
+    
+    alumni.columns = col_names
+    title_case_list = ['address',
+                       'city',
+                       'state',
+                       'church',
+                       'highschool',
+                       'college',
+                       'job']
+    alumni = alumni.fillna('None')
+    for i in title_case_list:
+        alumni[i] = alumni[i].str.title()
+
+    alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
+
+    query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
+                FROM Alumni_ID
+                WHERE last_name= :last AND first_name= :first AND birthday= :bday
+                GROUP BY last_name
+                '''
+                
+    connection = _db_connection()
+    for i in alumni.index:
+        last_name = alumni.loc[i,'last_name']
+        first_name = alumni.loc[i,'first_name']
+        bday = alumni.loc[i,'birthday']
+        sq_df = pd.read_sql(query_1, params={'last': last_name,
+                                        'first': first_name,
+                                        'bday': bday},
+                         con=connection)
+        if len(sq_df) == 0:
+            data = [[last_name, first_name, bday]]
+            add_alumni = pd.DataFrame(data, columns = ['last_name',
+                                                       'first_name',
+                                                       'birthday'])
+            add_alumni.to_sql('Alumni_ID', connection, index=False,
+                      if_exists='append')
+        else:
+            print('\'',first_name,' ', last_name, '\' already exists..',
+                  sep='')
+            alumni = alumni.drop(i)
+    connection.commit()
+    connection.close()
+    import_alumni_p2(alumni)
+    
+    
+def import_alumni_p2(alumni):
+#import alumni now that IDs have been assigned
+    if len(alumni) != 0:
+        query_2 = ''' SELECT ID_number
+                      FROM Alumni_ID
+                      WHERE first_name= :first AND
+                            last_name= :last AND
+                            birthday= :bday
+                            '''
+        connection = _db_connection()
+        id_df = pd.DataFrame(columns=['ID_number'])
+        for i in alumni.index:
+            last_name = alumni.loc[i, 'last_name']
+            first_name = alumni.loc[i, 'first_name']
+            bday = alumni.loc[i, 'birthday']
+
+            sq_df = pd.read_sql(query_2, params={'last': last_name,
+                                            'first': first_name,
+                                            'bday': bday},
+                             con=connection)
+            if len(sq_df) == 1:
+                alum_num = int(sq_df.loc[0,'ID_number'])
+                alumni.at[i, 'ID_number'] = alum_num
+                values = alumni.loc[i]
+                new = pd.DataFrame(columns = alumni.columns)
+                new = new.append(values, ignore_index = True)
+                new.drop(['last_name', 'first_name', 'birthday'], axis=1, inplace=True)
+                new.to_sql('Basic_Info', connection, index=False,
+                              if_exists='append')
+                df = new[['ID_number']]
+                id_df = id_df.append(df)
+            else:
+                print('DF error. length of:', len(sq_df))
+
+        connection.commit()
+        connection.close()
+        
+        print(id_df)
+        input('PAUSE - df check')
+        import_alumni_p3(df)
+    else:
+        print('Nothing to add.')
+
+def import_alumni_p3(id_df):
+#initialize all the new alumni to the "Last_Contact" Table
+    
+    query = ''' SELECT Alumni_ID.ID_number, graduation_year
+                FROM Alumni_ID
+                INNER JOIN Basic_Info on Basic_Info.ID_number = Alumni_ID.ID_number
+                WHERE Alumni_ID.ID_number = :id_num
+                ORDER BY last_name ASC
+              '''
+    for i in id_df:
+        connection = _db_connection()
+        output = pd.read_sql(query, 
+                             con=connection, 
+                             params={'id_num' = id_df.at[0, 'ID_number']})
+        connection.close()
+
+        col_names = ['ID_number',
+                     'graduation_year']
+        output.columns = col_names
+        for i in output.index:
+            last_date = str(output.at[i, 'graduation_year'])
+            last_date = last_date + '-06-01'
+            output.at[i, 'last_date'] = last_date
+    
+        output['last_date'] = pd.to_datetime(output['last_date']).dt.strftime('%Y-%m-%d')
+        output.drop(columns=['graduation_year'], inplace = True)
+        output = output[['ID_number',
+                         'last_date']]
+        connection = _db_connection()
+
+        output.to_sql('Last_Contact', connection, index=False,
+                        if_exists='append')
+        
+    
+def select_file():
+    layout = [[sg.Text('Folder Location')],
+              [sg.Input(), sg.FileBrowse()],
+              [sg.OK(), sg.Cancel()] ]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+    values = window.read()
+    window.close()
+    if values[1][0] != '':
+        return values[1][0]
+    return None
+    
+
+def _db_connection():
+    '''
+    Connects to the .db file
+
+    Returns
+    -------
+    connection : sqlite db connection
+
+    '''
+    try:
+        connection = sqlite3.connect('Data\\UIF_Alumni_DB.db')
+    except Error:
+        print(Error)
+    return connection
+
+    
+if __name__ == "__main__":
+    main()
