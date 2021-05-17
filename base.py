@@ -23,6 +23,7 @@ import export_call_list #exports a .csv file with a list of alumni to contact ne
 import export_single_all_info #exports a .pdf file with all information on one alumni
 import get_updated_alumni_info #prompts the user to input new changes to an alumni
 import write_updated_alumni_info #all changes to an alumni are writte to the db
+import advanced_query #gui window where you can query the DB
 
 
 def main():
@@ -64,6 +65,10 @@ def main():
                      key='export_all',
                      size=(30,1))],
           [sg.Text('_'  * 100, size=(32, 1))],
+          [sg.Button('Advanced',
+                     key='advanced',
+                     size=(30,1))],
+          [sg.Text('_'  * 100, size=(32, 1))],
           [sg.Button('Close the program',
                      key='close',
                      size=(30,1))]]
@@ -97,6 +102,11 @@ def main():
             window.close()
             export_single_all_info.main()
             # all_good()
+            main()
+        
+        elif event[0] == 'advanced':
+            window.close()
+            main_advanced()
             main()
 
         elif event[0] in ('close', sg.WIN_CLOSED):
@@ -159,6 +169,39 @@ def main_export_contact():
     else:
         main()
 
+
+def main_advanced():
+    layout = [[sg.Text('Please select an action that you would like to perform:',
+                       size=(25,3),
+                       font=('Arial', 15))],
+          [sg.Button('Import new alumni from a .csv file',
+                     key='csv',
+                     size=(30,1))],
+          [sg.Button('Query the databse',
+                     key='query',
+                     size=(30,1))],
+          [sg.Text('_'  * 100, size=(32, 1))],
+          [sg.Button('Return to Main Menu',
+                     key='main',
+                     size=(30,1))]]
+
+    window = sg.Window('UIF: Alumni Database', layout)
+    
+    while True:
+        event = window.read()
+
+        if event[0] == 'csv':
+            window.close()
+            #csv python file
+
+        elif event[0] == 'query':
+            window.close()
+            advanced_query.main()
+
+        elif event[0] in ('main', sg.WIN_CLOSED):
+            break
+
+    window.close()
 
 def select_folder():
     layout = [[sg.Text('Select a folder where the file will be saved:')],

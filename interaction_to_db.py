@@ -110,14 +110,14 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    df = pd.DataFrame({'ID_number':1001,
-                          'contact_date':'2020-04-20',
-                          'spoke':'Yes',
-                          'track':'College',
-                          'status': 'On Track',
-                          'currently_employed': 'Yes',
-                          'occupation':'Processor',
-                          'notes':'lorem ipsum.'},
-                        index=[0])
-    main(df)
-    # main()
+    # df = pd.DataFrame({'ID_number':1001,
+    #                       'contact_date':'2020-04-20',
+    #                       'spoke':'Yes',
+    #                       'track':'College',
+    #                       'status': 'On Track',
+    #                       'currently_employed': 'Yes',
+    #                       'occupation':'Processor',
+    #                       'notes':'lorem ipsum.'},
+    #                     index=[0])
+    # main(df)
+    main()
