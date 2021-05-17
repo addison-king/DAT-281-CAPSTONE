@@ -21,7 +21,7 @@ def main():
     values_p1 = None
     values_p2 = None
     values_p2_truth = None
-
+    result = None
     alumni = lookup_alumni() #DICTIONARY
 
     if alumni != None:
@@ -35,8 +35,8 @@ def main():
         else:
             values_p2 = interaction_p2() #DICTIONARY
             values_p2_truth = True
-            
-    
+
+
     if not None in [alumni, values_p1, values_p2]:
         if values_p2_truth == True:
             values_p1 = clean_page_1(values_p1)
@@ -53,13 +53,13 @@ def main():
         print('None value. Quit.')
         result = None
     # print(result)
-    for i in result:
-        print(i, result.at[0,i])
+    # for i in result:
+    #     print(i, result.at[0,i])
     return result
 
 def format_df(df):
     df = df[['ID_number','last_name', 'first_name', 'contact_date',
-             'spoke', 'track', 'status','currently_employed', 'occupation', 
+             'spoke', 'track', 'status','currently_employed', 'occupation',
              'notes']]
     df.drop(['first_name', 'last_name'], axis=1, inplace=True)
     df = df.fillna('None')
@@ -138,9 +138,9 @@ def clean_page_2(values):
     elif values['employed_no'] == True:
         clean['currently_employed'] = 'No'
         clean['occupation'] = None
-        
+
     clean['notes'] = values['notes'].strip('\n')
-    
+
     return clean
 
 
@@ -314,8 +314,8 @@ def interaction_p2():
                       sg.Radio('Unemployed', 'status', key='status_unemployed', enable_events=True)],
                     [sg.Radio('Other', 'status', key='status_other', enable_events=True),
                       sg.In(key='status_other_input')]]
-    
-    frame_occupation = [[sg.Txt('Currently working?'), 
+
+    frame_occupation = [[sg.Txt('Currently working?'),
                          sg.Radio('Yes', 'employed', key='employed_yes', enable_events=True),
                          sg.Radio('No', 'employed', key='employed_no', enable_events=True)],
                         [sg.Txt('If working, current occupation'),
@@ -344,10 +344,10 @@ def interaction_p2():
 
         elif event == 'status_other':
             window['status_other_input'].SetFocus()
-        
+
         elif event == 'employed_yes':
             window['occupation'].SetFocus()
-            
+
         elif event == 'employed_no':
             window['notes'].SetFocus()
 

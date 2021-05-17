@@ -195,10 +195,11 @@ def main_advanced():
             window.close()
             advanced_csv_import.main()
 
+
         elif event[0] == 'query':
             window.close()
             advanced_query.main()
-            all_good()
+
 
         elif event[0] in ('main', sg.WIN_CLOSED):
             break

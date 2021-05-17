@@ -199,6 +199,7 @@ def import_alumni_p3(id_df):
                         if_exists='append')
         connection.commit()
         connection.close()
+        all_good()
 
 
 def select_file():
@@ -212,6 +213,18 @@ def select_file():
     if values[1][0] != '':
         return values[1][0]
     return None
+
+
+def all_good():
+    layout = [[sg.Text('Everything completed without errors.',
+               font=('Arial', 15))],
+              [sg.Button('Return to Main Menu', key='close')]]
+    window = sg.Window('UIF: Alumni Database', layout)
+    while True:
+        event = window.read()
+        if event[0] in ('close', sg.WIN_CLOSED):
+            break
+    window.close()
 
 
 def _db_connection():
