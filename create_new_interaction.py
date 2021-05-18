@@ -30,7 +30,10 @@ def main():
 
     if values_p1 != None:
         if values_p1['spoke_no'] == True:
-            values_p2 = {'notes': 'None', 'track': 'None', 'status': 'None'}
+            # values_p2 = {'notes': 'Did not speak to alumni', 'track': 'Unknown', 
+            #               'status': 'Unknown', 'currently_employed': 'Unknown', 
+            #               'occupation': 'Unknown'}
+            values_p2 = no_speak_p2_values(alumni['ID_number'])
             values_p2_truth = False
         else:
             values_p2 = interaction_p2() #DICTIONARY
@@ -52,10 +55,28 @@ def main():
     else:
         print('None value. Quit.')
         result = None
-    # print(result)
+
     # for i in result:
     #     print(i, result.at[0,i])
     return result
+
+
+def no_speak_p2_values(id_num):
+    
+    query = '''SELECT occupation
+                FROM Last_Contact
+                WHERE ID_number= :id'''
+    connection = _db_connection()
+    data = pd.read_sql(query, params={'id':id_num}, con=connection)
+    connection.close()
+    
+    occupation = data.at[0, 'occupation']
+
+    values = {'notes': 'Did not speak to alumni', 'track': 'Unknown', 
+              'status': 'Unknown', 'currently_employed': 'Unknown', 
+              'occupation': occupation}
+    return values
+
 
 def format_df(df):
     df = df[['ID_number','last_name', 'first_name', 'contact_date',

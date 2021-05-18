@@ -21,6 +21,7 @@ import interaction_to_db #writes a new alumni interaction to the db
 import export_name_list #exports a .csv file with full list of names from db
 import export_call_list #exports a .csv file with a list of alumni to contact next
 import export_single_all_info #exports a .pdf file with all information on one alumni
+import export_percentage_working #exports a .csv file, sep by grad year comparing working/not
 import get_updated_alumni_info #prompts the user to input new changes to an alumni
 import write_updated_alumni_info #all changes to an alumni are writte to the db
 import advanced_query #gui window where you can query the DB
@@ -62,6 +63,9 @@ def main():
           [sg.Button('Export list of next alumni to contact',
                      key='contact',
                      size=(30,1))],
+          [sg.Button('Export percentage of alumni working\nper graduation class',
+                     key='perc_work',
+                     size=(30,2)),],
           [sg.Button('Select an alumni and export all data',
                      key='export_all',
                      size=(30,1))],
@@ -98,6 +102,10 @@ def main():
         elif event[0] == 'contact':
             window.close()
             main_export_contact()
+            
+        elif event[0] == 'perc_work':
+            window.close()
+            main_export_perc_work()
 
         elif event[0] == 'export_all':
             window.close()
@@ -165,6 +173,15 @@ def main_export_contact():
     location = select_folder()
     if location is not None:
         export_call_list.main(location) #.py file main function
+        all_good()
+        main()
+    else:
+        main()
+        
+def main_export_perc_work():
+    location = select_folder()
+    if location is not None:
+        export_percentage_working.main(location)
         all_good()
         main()
     else:
