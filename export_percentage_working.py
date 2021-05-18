@@ -16,9 +16,8 @@ import pandas as pd
 
 def main(location):
     perc_working = percentage_working()
-    
-    # location = select_folder()
-    file_name = 'Percentage Working.csv'
+
+    file_name = 'Percentage_Working.csv'
     os.chdir(location)
     perc_working.to_csv(file_name, index=False, encoding='utf-8')
 
@@ -40,7 +39,7 @@ def percentage_working():
         no = raw_data['No']
         yes = raw_data['Yes']
         total = no + yes
-        perc_yes = round(yes/total*100, 3)
+        perc_yes = round(yes/total, 3)
         # print('Graduation Year: ', i, '\nNot working: ', no, '\nWorking: ', yes, 
         #       '\nTotal: ', total, '\nPercentage working: ', perc_yes, '%',
         #       '\n\n', sep='')
@@ -52,19 +51,6 @@ def percentage_working():
     #     print('Percentage Working: ', round(result.at[i,'Percentage Working'], 1),'%' ,sep='')
     #     print()
     return result
-    
-    
-def select_folder():
-    layout = [[sg.Text('Select a folder where the file will be saved:')],
-              [sg.Input(), sg.FolderBrowse()],
-              [sg.OK(), sg.Cancel()] ]
-
-    window = sg.Window('UIF: Alumni Database', layout)
-    values = window.read()
-    window.close()
-    if values[1][0] != '':
-        return values[1][0]
-    return None    
     
     
 def _db_connection():
