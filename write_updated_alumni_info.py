@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 29 12:08:34 2021
-
+Created on Mon Apr 12, 2021
+Developed for UIF to more easily handle the growing number of alumni they have,
+    and to track interactions with said alumni.
+Final Project for CCAC DAT-281
 @author: BKG
 """
 

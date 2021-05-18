@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Apr 24 08:45:45 2021
+Created on Mon Apr 12, 2021
 Developed for UIF to more easily handle the growing number of alumni they have,
     and to track interactions with said alumni.
 Final Project for CCAC DAT-281
 @author: BKG
 """
+
 import sqlite3
 from sqlite3 import Error
 import pandas as pd
