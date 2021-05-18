@@ -45,7 +45,8 @@ def new_alumni_gui(location):
         event = window.read()
         if event[0] == 'import':
             window.close()
-            sg.popup_ok('This may take a few seconds.\nPlease be patient.')
+            sg.popup_ok('This may take a few seconds.\n\nThere will be no window\n'+
+                        'while the program works.\nPlease be patient.')
             import_alumni_p1(location)
 
         elif event[0] in  (sg.WIN_CLOSED, 'cancel', 'main'):
@@ -78,7 +79,8 @@ def import_alumni_p1(location):
     for i in title_case_list:
         alumni[i] = alumni[i].str.title()
 
-    alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
+    if alumni['birthday'].any() == True:
+        alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
                 FROM Alumni_ID
@@ -180,6 +182,9 @@ def import_alumni_p3(id_df):
         else:
             data = ['No']
             output['currently_employed'] = data
+
+        if output.at[0,'graduation_year'] == 'None':
+            output.at[0,'graduation_year'] = 2010
 
         for i in output.index:
             last_date = str(output.at[i, 'graduation_year'])
