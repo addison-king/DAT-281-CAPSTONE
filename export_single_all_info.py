@@ -119,7 +119,7 @@ def format_basic_info(df):
 
     df = df[['Core Student', 'Graduation Year','Phone Number','Email',
              'Gender','Street Address','City','State','Zipcode','Church',
-             'Highschool','College','Job','Special Health Concerns',
+             'Highschool','College','Job','Graduated','Special Health Concerns',
              'Parent | Guardian','P|G Phone Number','P|G Email',
              'Emergency Contact','Emergency Contact Phone Number','Options',
              'Education','Athletics','Performing Arts']]

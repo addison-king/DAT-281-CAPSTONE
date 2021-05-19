@@ -52,9 +52,24 @@ def split_last_contact(df):
 
 
 def new_event_to_db(df):
+
+    if df.at[0,'status'] == 'Graduated':
+        query = '''UPDATE Basic_Info
+                    SET graduated = \'Yes\'
+                    WHERE ID_number = ?'''
+        connection = _db_connection()
+        cursor = connection.cursor()
+        id_num = int(df.at[0,'ID_number'])
+        
+        cursor.execute(query, (id_num,)) 
+        connection.commit()
+        connection.close()         
+            
+    
     connection = _db_connection()
     df.to_sql('Contact_Events', connection, index=False, if_exists='append')
     connection.close()
+    
 
 
 def update_last_contact(df):
@@ -111,14 +126,14 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    # df = pd.DataFrame({'ID_number':1001,
-    #                       'contact_date':'2020-04-20',
-    #                       'spoke':'Yes',
-    #                       'track':'College',
-    #                       'status': 'On Track',
-    #                       'currently_employed': 'Yes',
-    #                       'occupation':'Processor',
-    #                       'notes':'lorem ipsum.'},
-    #                     index=[0])
-    # main(df)
-    main()
+    df = pd.DataFrame({'ID_number':1001,
+                          'contact_date':'2020-04-20',
+                          'spoke':'Yes',
+                          'track':'College',
+                          'status': 'Graduated',
+                          'currently_employed': 'Yes',
+                          'occupation':'Processor',
+                          'notes':'lorem ipsum.'},
+                        index=[0])
+    main(df)
+    # main()

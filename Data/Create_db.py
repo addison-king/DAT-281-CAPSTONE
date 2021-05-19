@@ -42,6 +42,7 @@ def _create_db_table():
                         highschool text,
                         college text,
                         job text,
+                        graduated text,
                         health_info text,
                         parent_guardian text,
                         parent_guardian_phone_num text,

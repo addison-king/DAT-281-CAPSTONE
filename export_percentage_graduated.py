@@ -11,79 +11,52 @@ import os
 import sqlite3
 from sqlite3 import Error
 import pandas as pd
-import PySimpleGUI as sg
-
 
 def main(location):
-    """
-    Calculates the percentage of after high school activities graduates.
-    Writes the resulting values to .csv
 
-    Parameters
-    ----------
-    location : String
-        Windows folder location the user selected.
+    query = '''SELECT graduation_year, graduated
+               FROM Basic_Info
+               ORDER BY graduation_year asc'''
+    connection = _db_connection()
+    data = pd.read_sql(query, con=connection)
+    connection.close()    
 
-    Returns
-    -------
-    None.
+    for i in data.index:
+        if data.at[i,'graduated'] == None:
+            data.at[i,'graduated'] = 'No'
+        if data.at[i,'graduation_year'] == 'None':
+            data.at[i,'graduation_year'] = 0     
 
-    """
+    result = pd.DataFrame(columns=['Graduation Year', 'Not Graduated', 'Graduated',
+                                   'Total', 'Percentage Graduated'])
+    
+    for i in data.graduation_year.unique():
+        raw_data = data.loc[data['graduation_year'] == i].value_counts(subset='graduated')
+            
+        
+        if 'Yes' in raw_data.keys():
+            yes = raw_data['Yes']
+        else:
+            yes = 0
 
-    perc_data = percentage_graduated()
+        if 'No' in raw_data.keys():
+            no = raw_data['No']
+        else:
+            no = 0
 
+        total = no + yes
+        perc_yes = round(yes/total, 3)
+
+        dat = [i, no, yes, total, perc_yes]
+        result.loc[len(result.index)] = dat
+    
+    result.sort_values(by=['Graduation Year'])
+    
     file_name = 'Percentage_Graduated.csv'
     os.chdir(location)
-    perc_data.to_csv(file_name, index=False, encoding='utf-8')
+    result.to_csv(file_name, index=False, encoding='utf-8')
 
-
-def percentage_graduated():
-    query_grad = '''SELECT COUNT(*)
-                    FROM Contact_Events
-                    WHERE status = \'Graduated\''''
-
-    query_contacted = '''SELECT COUNT(DISTINCT ID_number)
-                         FROM Contact_Events'''
-
-    query_tot = '''SELECT COUNT(*)
-                    FROM Alumni_ID'''
-
-    connection = _db_connection()
-    grad = pd.read_sql(query_grad, con=connection)
-    contact = pd.read_sql(query_contacted, con=connection)
-    total = pd.read_sql(query_tot, con=connection)
-    connection.close()
-
-    graduated = grad.at[0,'COUNT(*)']
-    contacted = contact.at[0, 'COUNT(DISTINCT ID_number)']
-    total = total.at[0,'COUNT(*)']
-
-    perc_grad_con = round(graduated/contacted,3)
-    perc_grad_tot = round(graduated/total,3)
-
-    data = {'Graduated': graduated,
-            'Alumni Contacted': contacted,
-            'Total Alumni': total,
-            'Graduation Percentage of Contacted': perc_grad_con,
-            'Graduation Percetage in Total': perc_grad_tot}
-    result = pd.DataFrame(data, index=[0])
-
-    return result
-
-
-def select_folder():
-    layout = [[sg.Text('Select a folder where the file will be saved:')],
-              [sg.Input(), sg.FolderBrowse()],
-              [sg.OK(), sg.Cancel()] ]
-
-    window = sg.Window('UIF: Alumni Database', layout)
-    values = window.read()
-    window.close()
-    if values[1][0] != '':
-        return values[1][0]
-    return None
-
-
+    
 def _db_connection():
     '''
     Connects to the .db file
