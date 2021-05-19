@@ -7,6 +7,7 @@ Final Project for CCAC DAT-281
 @author: BKG
 """
 
+import datetime
 import PySimpleGUI as sg
 import sqlite3
 from sqlite3 import Error
@@ -14,7 +15,15 @@ import pandas as pd
 
 
 def main():
-    print()
+    """
+    Allows the user to select a .csv file and import
+
+    Returns
+    -------
+    None.
+
+    """
+
     location = select_file()
     if location is not None:
         new_alumni_gui(location)
@@ -79,8 +88,12 @@ def import_alumni_p1(location):
     for i in title_case_list:
         alumni[i] = alumni[i].str.title()
 
-    if alumni['birthday'].any() == True:
-        alumni['birthday'] = pd.to_datetime(alumni['birthday']).dt.strftime('%Y-%m-%d')
+    for i in alumni.index:
+        if alumni.at[i, 'birthday'] != 'None':
+            temp = datetime.datetime.strptime(alumni.at[i, 'birthday'], '%m/%d/%Y')
+            alumni.at[i, 'birthday'] = datetime.datetime.strftime(temp, '%Y-%m-%d')
+
+
 
     query_1 = ''' SELECT COUNT(*), first_name, last_name, birthday
                 FROM Alumni_ID
@@ -207,7 +220,7 @@ def import_alumni_p3(id_df):
 
 
 def select_file():
-    layout = [[sg.Text('Folder Location')],
+    layout = [[sg.Text('File Location')],
               [sg.Input(), sg.FileBrowse()],
               [sg.OK(), sg.Cancel()] ]
 

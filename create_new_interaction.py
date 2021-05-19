@@ -17,6 +17,16 @@ from datetime import datetime
 
 
 def main():
+    """
+    Overall, this GUI prompts the user to select an alumni from the db, then
+        allows them to input values from a form of contact.
+
+    Returns
+    -------
+    result : pd.DataFrame
+        Contains all the fields from the users input to be sent to the db.
+
+    """
 
     alumni = None
     values_p1 = None
@@ -31,8 +41,8 @@ def main():
 
     if values_p1 != None:
         if values_p1['spoke_no'] == True:
-            # values_p2 = {'notes': 'Did not speak to alumni', 'track': 'Unknown', 
-            #               'status': 'Unknown', 'currently_employed': 'Unknown', 
+            # values_p2 = {'notes': 'Did not speak to alumni', 'track': 'Unknown',
+            #               'status': 'Unknown', 'currently_employed': 'Unknown',
             #               'occupation': 'Unknown'}
             values_p2 = no_speak_p2_values(alumni['ID_number'])
             values_p2_truth = False
@@ -63,18 +73,18 @@ def main():
 
 
 def no_speak_p2_values(id_num):
-    
+
     query = '''SELECT occupation
                 FROM Last_Contact
                 WHERE ID_number= :id'''
     connection = _db_connection()
     data = pd.read_sql(query, params={'id':id_num}, con=connection)
     connection.close()
-    
+
     occupation = data.at[0, 'occupation']
 
-    values = {'notes': 'Did not speak to alumni', 'track': 'Unknown', 
-              'status': 'Unknown', 'currently_employed': 'Unknown', 
+    values = {'notes': 'Did not speak to alumni', 'track': 'Unknown',
+              'status': 'Unknown', 'currently_employed': 'Unknown',
               'occupation': occupation}
     return values
 
@@ -89,6 +99,7 @@ def format_df(df):
 
     return df
 
+
 def merge_dicts(al, p1, p2):
     al.update(p1)
     al.update(p2)
@@ -96,7 +107,6 @@ def merge_dicts(al, p1, p2):
 
 
 def clean_page_1(values):
-
 #Format the datetime value to be yyyy-mm-dd
     temp_date = values['date']
     temp_date = datetime.strptime(temp_date, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
@@ -114,12 +124,10 @@ def clean_page_1(values):
         values.pop('spoke_yes', None)
         values.pop('spoke_no', None)
 
-
     return values #dict {'date':'yyyy-mm-dd', 'spoke':'Yes | No'}
 
 
 def clean_page_2(values):
-
     temp = dict()
     for (key, value) in values.items():
         if value == True:
@@ -167,7 +175,6 @@ def clean_page_2(values):
 
 
 def lookup_alumni():
-
     frame_id_number = [[sg.Input(key='id_num',
                                  change_submits=True, do_not_clear=True)]]
 

@@ -9,10 +9,23 @@ Final Project for CCAC DAT-281
 
 import sqlite3
 from sqlite3 import Error
-import pandas as pd
 
 
 def main(alumni):
+    """
+
+
+    Parameters
+    ----------
+    alumni : pd.DataFrame
+        Contains all the values the user inputted from the GUI that need to be
+            written to the db.
+
+    Returns
+    -------
+    None.
+
+    """
 
     alumni = alumni.applymap(str)
     if 'last_name' in alumni.columns:
@@ -121,13 +134,13 @@ def _db_connection():
 
 
 if __name__ == "__main__":
-    test_data = {'ID_number': 1007,
-              'first_name': 'Addison2',
-              'last_name': 'Smithson',
-              'gender': 'Female',
-              'city':'Some city',
-              'state':'New York',
-              'zipcode':15212}
-    results = pd.DataFrame(test_data, index=[0])
-    main(results)
-    # main()
+    # test_data = {'ID_number': 1007,
+    #           'first_name': 'Addison2',
+    #           'last_name': 'Smithson',
+    #           'gender': 'Female',
+    #           'city':'Some city',
+    #           'state':'New York',
+    #           'zipcode':15212}
+    # results = pd.DataFrame(test_data, index=[0])
+    # main(results)
+    main()

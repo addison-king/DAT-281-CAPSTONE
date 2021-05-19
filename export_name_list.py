@@ -14,7 +14,21 @@ import pandas as pd
 
 
 def main(location):
-    print()
+    """
+    From the db, pulls the following columns from the listed tables, formats,
+       the dataframe, then saves it to a .csv file. (see: 'query_read')
+    Specifically, this gives the user a list of all alumni with their ID nums.
+
+    Parameters
+    ----------
+    location : STR
+        String of the path to the folder the user previously selected.
+
+    Returns
+    -------
+    None.
+
+    """
 
     query = ''' SELECT Alumni_ID.ID_number, first_name, last_name,
                        graduation_year, CORE_student, birthday

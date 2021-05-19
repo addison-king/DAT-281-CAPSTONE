@@ -107,11 +107,11 @@ def main():
         elif event[0] == 'contact':
             window.close()
             main_export_contact()
-            
+
         elif event[0] == 'perc_work':
             window.close()
             main_export_perc_work()
-            
+
         elif event[0] == 'perc_grad':
             window.close()
             main_export_perc_grad()
@@ -186,11 +186,11 @@ def main_export_contact():
         main()
     else:
         main()
-        
+
 def main_export_perc_work():
     location = select_folder()
     if location is not None:
-        export_percentage_working.main(location)
+        export_percentage_working.main(location) #.py file main function
         all_good()
         main()
     else:
@@ -200,11 +200,12 @@ def main_export_perc_work():
 def main_export_perc_grad():
     location = select_folder()
     if location is not None:
-        export_percentage_graduated.main(location)
+        export_percentage_graduated.main(location) #.py file main function
         all_good()
         main()
     else:
         main()
+
 
 def main_advanced():
     layout = [[sg.Text('Please select an action that you would like to perform:',

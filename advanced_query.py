@@ -9,46 +9,69 @@ Final Project for CCAC DAT-281
 
 import sqlite3
 from sqlite3 import Error
-import pandas as pd
 import PySimpleGUI as sg
-import re
-from re import search
-from datetime import datetime
+
 
 def main():
-    print()
+    """
+    This GUI window allows the user to type in SQLite commands and view the
+        results. For any future programmer, I wished to pretty print the
+        output, but didn't have time.
+
+    Returns
+    -------
+    None.
+
+    """
+
     layout = [[sg.Text('Use this window to query the databse.')],
               [sg.Multiline(size=(100, 10), key='sql_input')],
               [sg.Text('_'  * 100, size=(100, 1))],
               [sg.Multiline(size=(100,10), enable_events=True,
                             do_not_clear=True, key='sql_output')],
-              [sg.Button('Submit', key='query', size=(30,1)), 
+              [sg.Button('Submit', key='query', size=(30,1)),
                sg.T('     '),
                sg.Button('Main Menu', key='main', size=(30,1))]]
-    
+
     window = sg.Window('UIF: Alumni Database', layout)
-    
+
     while True:
         event, values = window.read()
-        
+
         if event == 'query':
             answer = query_db(values['sql_input'])
             window['sql_output'].Update(answer)
-        
+
         if event in ('main', sg.WIN_CLOSED):
             break
     window.close()
 
+
 def query_db(query):
-    print(query)
+    """
+    Literally sends the users input to the db then returns the result.
+
+    Parameters
+    ----------
+    query : STR
+        Hopefully a command that makes sense to the db
+
+    Returns
+    -------
+    rows : LIST
+        List of the resulting values. Note, this is missing the col headers.
+
+    """
+    # print(query)
     connection = _db_connection()
     cursor = connection.cursor()
     cursor.execute(query)
     rows = cursor.fetchall()
-    print(rows)
-    
+    # print(type(rows))
+
     return rows
-    
+
+
 def _db_connection():
     '''
     Connects to the .db file
@@ -62,8 +85,8 @@ def _db_connection():
         connection = sqlite3.connect('Data\\UIF_Alumni_DB.db')
     except Error:
         print(Error)
-    return connection    
-    
-    
+    return connection
+
+
 if __name__ == "__main__":
     main()

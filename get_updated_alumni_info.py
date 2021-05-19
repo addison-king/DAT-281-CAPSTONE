@@ -7,15 +7,25 @@ Final Project for CCAC DAT-281
 @author: BKG
 """
 
-import sqlite3
-from sqlite3 import Error
+
 import pandas as pd
 import PySimpleGUI as sg
 import re
-from re import search
-from datetime import datetime
+import sqlite3
+from sqlite3 import Error
+
 
 def main():
+    """
+    GUI where the user selects an alumni to change to db information for. Each
+        page has default values pulled from the db.
+
+    Returns
+    -------
+    alumni : TYPE
+        DESCRIPTION.
+
+    """
     alumni = None
     values_page_1 = None
     values_page_2 = None
@@ -29,13 +39,13 @@ def main():
         full_info = get_alumni_data(alumni['ID_number']) #DATAFRAME
 
         values_page_1 = text_new_alumni_p1(full_info)
-        if values_page_1 != None:
+        if values_page_1 is not None:
             values_page_2 = text_new_alumni_p2(full_info)
-        if values_page_2 != None:
+        if values_page_2 is not None:
             values_page_3 = text_new_alumni_p3(full_info)
-        if values_page_3 != None:
+        if values_page_3 is not None:
             values_page_4 = text_new_alumni_p4(full_info)
-        if values_page_4 != None:
+        if values_page_4 is not None:
             values_page_5 = text_new_alumni_p5(full_info)
 
         if not None in [values_page_1, values_page_2, values_page_3,
@@ -102,7 +112,6 @@ def compare_df(new_alumni, old_alumni, id_num):
         results = None
 
     return results
-
 
 
 def merge_dicts(p1, p2, p3, p4, p5):
@@ -183,6 +192,7 @@ def clean_page_1(values):
 
     return values
 
+
 def clean_page_2(values):
     if values['gender_female'] == True:
         values.pop('gender_female', None)
@@ -246,6 +256,7 @@ def clean_page_2(values):
 
     return values
 
+
 def clean_page_3(values):
     if values['church_acac'] == True:
         values['church'] = 'ACAC'
@@ -269,6 +280,7 @@ def clean_page_3(values):
         values.pop('church_other', None)
 
     return values
+
 
 def clean_page_4(values):
     values.pop('e_parent', None)
@@ -345,7 +357,6 @@ def clean_page_5(values):
     return values
 
 
-
 def text_new_alumni_p1(alumni):
 
     frame_first_name = [[sg.Input(key='first', default_text=alumni.at[0, 'first_name'])]]
@@ -408,19 +419,19 @@ def text_new_alumni_p1(alumni):
         if event == 'next_page':
 #first name cannot be empty
             if len(values['first']) == 0:
-                    window['main_error'].Update('Please input a First Name')
-                    window['main_error'].Widget.config(background='red')
-                    window['first'].SetFocus()
+                window['main_error'].Update('Please input a First Name')
+                window['main_error'].Widget.config(background='red')
+                window['first'].SetFocus()
 #last name cannot be empty
             elif len(values['last']) == 0:
-                    window['main_error'].Update('Please input a Last Name')
-                    window['main_error'].Widget.config(background='red')
-                    window['last'].SetFocus()
+                window['main_error'].Update('Please input a Last Name')
+                window['main_error'].Widget.config(background='red')
+                window['last'].SetFocus()
 #graduation year must be 4 digits
             elif len(values['grad_year']) != 4:
-                    window['main_error'].Update('Please input a Graduation Year')
-                    window['main_error'].Widget.config(background='red')
-                    window['grad_year'].SetFocus()
+                window['main_error'].Update('Please input a Graduation Year')
+                window['main_error'].Widget.config(background='red')
+                window['grad_year'].SetFocus()
 #phone number must be empty OR ###-###-####
             elif ((sum([len(values['phone1']),
                        len(values['phone2']),
@@ -428,8 +439,8 @@ def text_new_alumni_p1(alumni):
                  (len(values['phone1']) !=3 or
                   len(values['phone2']) !=3 or
                   len(values['phone3']) !=4)):
-                    window['main_error'].Update('Please complete the Phone Number')
-                    window['main_error'].Widget.config(background='red')
+                window['main_error'].Update('Please complete the Phone Number')
+                window['main_error'].Widget.config(background='red')
 #No errors, break, continue to next page
             elif (sum([len(values['last']),
                        len(values['first'])]) >= 2 and
@@ -437,9 +448,9 @@ def text_new_alumni_p1(alumni):
                   sum([len(values['phone1']),
                        len(values['phone2']),
                        len(values['phone3'])]) in [0,10]):
-                    window['main_error'].Update('')
-                    window['main_error'].Widget.config(background='#64778D')
-                    break
+                window['main_error'].Update('')
+                window['main_error'].Widget.config(background='#64778D')
+                break
 
         if event in ('grad_year', 'phone1', 'phone2', 'phone3'):
             window[event].Update(re.sub("[^0-9]", "", values[event]))
@@ -464,6 +475,7 @@ def text_new_alumni_p1(alumni):
 
     return values
 
+
 def text_new_alumni_p2(alumni):
 
     states = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado',
@@ -478,6 +490,7 @@ def text_new_alumni_p2(alumni):
             'West Virginia','Wisconsin','Wyoming']
 
     birthday = alumni.at[0,'birthday'].split('-')
+
     frame_birthday = [[sg.In(key='bday_month', size=(3,1),
                              default_text=birthday[1],
                              change_submits=True, do_not_clear=True),
@@ -855,6 +868,7 @@ def text_new_alumni_p4(alumni):
 
     return values
 
+
 def text_new_alumni_p5(alumni):
     if alumni.at[0,'OPTIONS'] == 'Yes':
         frame_options = [[sg.Radio('Yes', 'options', key='options_yes', default=True),
@@ -1060,9 +1074,6 @@ def sql_lookup_num(id_num):
         results = None
 
     return results
-
-
-
 
 
 def _db_connection():

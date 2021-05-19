@@ -12,7 +12,6 @@ from sqlite3 import Error
 import pandas as pd
 
 
-
 def main(df):
     """
     Takes a dataframe from the main script.
@@ -32,10 +31,10 @@ def main(df):
     """
 
     df['contact_date'] = pd.to_datetime(df['contact_date']).dt.strftime('%Y-%m-%d')
-    
+
     contact_df = split_contact_events(df)
     last_df = split_last_contact(df)
-    
+
     new_event_to_db(contact_df)
     update_last_contact(last_df)
 
@@ -47,7 +46,7 @@ def split_contact_events(df):
 
 
 def split_last_contact(df):
-    result = df[['ID_number', 'contact_date', 'currently_employed', 
+    result = df[['ID_number', 'contact_date', 'currently_employed',
                  'occupation']]
     return result
 
@@ -72,7 +71,7 @@ def update_last_contact(df):
     query_write_2 = '''UPDATE Basic_Info
                      SET job = ?
                      WHERE ID_number = ?
-                  '''              
+                  '''
     connection = _db_connection()
     cursor = connection.cursor()
     for i in df.index:
@@ -85,8 +84,8 @@ def update_last_contact(df):
 
         if date_df.at[i, 'last_date'] < df.at[i, 'contact_date']:
             cursor.execute(query_write_1,
-                           (df.at[i, 'contact_date'], 
-                            df.at[i, 'currently_employed'], 
+                           (df.at[i, 'contact_date'],
+                            df.at[i, 'currently_employed'],
                             df.at[i, 'occupation'], id_num))
             cursor.execute(query_write_2,
                            (df.iloc[i]['occupation'], id_num))

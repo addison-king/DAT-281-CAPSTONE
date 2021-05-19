@@ -11,6 +11,7 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 
+
 def main(df):
     """
     The funcitons that are called does 3 main things: (1)Writes to db and gets
@@ -31,7 +32,7 @@ def main(df):
 
     df = id_assign(df)
     write_info(df)
-    return
+
 
 def id_assign(df):
     """
@@ -197,6 +198,7 @@ def initialize_last_contact(df):
         output.to_sql('Last_Contact', connection, index=False,
                         if_exists='append') #write to table 'Last_Contact'
         connection.close()
+
 
 def _db_connection():
     '''

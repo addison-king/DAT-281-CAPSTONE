@@ -13,14 +13,21 @@ from sqlite3 import Error
 import pandas as pd
 
 def main(location):
-    # query_read = '''SELECT c.ID_number, c.first_name, c.last_name,
-    #                        c.CORE_student, c.last_date, b.phone_num, b.email
-    #                 FROM Last_Contact c
-    #                 INNER JOIN Basic_Info b
-    #                     ON c.ID_number = b.ID_number
-    #                 WHERE last_date < DATE('now', '-90 days')
-    #                 ORDER BY c.CORE_student DESC, c.last_date ASC
-    #              '''
+    """
+    From the db, pulls the following columns from the listed tables, formats,
+       the dataframe, then saves it to a .csv file. (see: 'query_read')
+    Specifically, this gives the user a list of alumni to call next.
+
+    Parameters
+    ----------
+    location : STR
+        String of the path to the folder the user previously selected.
+
+    Returns
+    -------
+    None.
+
+    """
 
     query_read = '''SELECT Alumni_ID.ID_number, first_name, last_name,
                            CORE_student, phone_num, email, last_date
