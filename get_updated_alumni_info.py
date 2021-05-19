@@ -68,7 +68,7 @@ def main():
             alumni = format_df(alumni)
 
     #compare the old values to new ones. only keep new ones.
-            alumni.at[0, 'zipcode'] = int(alumni.at[0,'zipcode'])
+            # alumni.at[0, 'zipcode'] = int(alumni.at[0,'zipcode'])
 
             alumni = compare_df(alumni, full_info, id_num)
             if not isinstance(alumni, pd.DataFrame):
@@ -187,8 +187,9 @@ def clean_page_1(values):
     values.pop('phone3', None)
 
     values['phone_num'] = phone
-
-    values['grad_year'] = int(values['grad_year'])
+    
+    if len(values['grad_year']) == 4:
+        values['grad_year'] = int(values['grad_year'])
 
     return values
 
@@ -251,8 +252,9 @@ def clean_page_2(values):
     values.pop('bday_year', None)
 
     values['birthday'] = birthday
-
-    values['zipcode'] = int(values['zipcode'])
+    
+    if len(values['zipcode']) == 5:
+        values['zipcode'] = int(values['zipcode'])
 
     return values
 
@@ -363,19 +365,28 @@ def text_new_alumni_p1(alumni):
 
     frame_last_name = [[sg.Input(key='last', default_text=alumni.at[0, 'last_name'])]]
 
-    if alumni.at[0, 'CORE_student'] == 'No':
+    if alumni.at[0, 'CORE_student'] in ['No', 'None']:
         frame_core_student = [[sg.Radio('Yes', 'CORE', key='core_yes'),
                                sg.Radio('No', 'CORE', key='core_no', default=True)]]
     else:
         frame_core_student = [[sg.Radio('Yes', 'CORE', key='core_yes', default=True),
                                sg.Radio('No', 'CORE', key='core_no')]]
-
-    frame_grad_year = [[sg.Input(key='grad_year', size=(13,1),
-                                 default_text=alumni.at[0, 'graduation_year'],
+    if alumni.at[0, 'graduation_year'] == 'None':
+        frame_grad_year = [[sg.Input(key='grad_year', size=(13,1),
+                                 default_text='',
                                  change_submits=True, do_not_clear=True),
                        sg.T('', key='error_grad_year', text_color='purple', size=(26,1))]]
-
+    else:
+        frame_grad_year = [[sg.Input(key='grad_year', size=(13,1),
+                                     default_text=alumni.at[0, 'graduation_year'],
+                                     change_submits=True, do_not_clear=True),
+                           sg.T('', key='error_grad_year', text_color='purple', size=(26,1))]]
+    
     if alumni.at[0,'phone_num'] == '':
+        number = ['','','']
+    elif alumni.at[0,'phone_num'] == 'None':
+        number = ['','','']
+    elif alumni.at[0,'phone_num'] == None:
         number = ['','','']
     else:
         number = alumni.at[0,'phone_num'].split('-')
@@ -428,7 +439,7 @@ def text_new_alumni_p1(alumni):
                 window['main_error'].Widget.config(background='red')
                 window['last'].SetFocus()
 #graduation year must be 4 digits
-            elif len(values['grad_year']) != 4:
+            elif len(values['grad_year']) not in [0,4]:
                 window['main_error'].Update('Please input a Graduation Year')
                 window['main_error'].Widget.config(background='red')
                 window['grad_year'].SetFocus()
@@ -444,7 +455,7 @@ def text_new_alumni_p1(alumni):
 #No errors, break, continue to next page
             elif (sum([len(values['last']),
                        len(values['first'])]) >= 2 and
-                  len(values['grad_year']) == 4 and
+                  len(values['grad_year']) in [0,4] and
                   sum([len(values['phone1']),
                        len(values['phone2']),
                        len(values['phone3'])]) in [0,10]):
@@ -489,7 +500,13 @@ def text_new_alumni_p2(alumni):
             'Tennessee','Texas','Utah','Vermont','Virginia','Washington',
             'West Virginia','Wisconsin','Wyoming']
 
-    birthday = alumni.at[0,'birthday'].split('-')
+    if alumni.at[0,'birthday'] == 'None':
+        birthday = ['','','']
+    elif alumni.at[0,'birthday'] == None:
+        birthday = ['','','']
+    else:
+        birthday = alumni.at[0,'birthday'].split('-')
+
 
     frame_birthday = [[sg.In(key='bday_month', size=(3,1),
                              default_text=birthday[1],
@@ -543,6 +560,14 @@ def text_new_alumni_p2(alumni):
                           sg.In(key='zipcode_input', size=(6,1),
                                 change_submits=True, do_not_clear=True, enable_events=True),
                           sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
+    elif alumni.at[0,'zipcode'] == 'None':
+        frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212'),
+                          sg.Radio('Other', 'zipcode', key='zipcode_other',
+                                   enable_events=True, default=True),
+                          sg.In(key='zipcode_input', size=(6,1),
+                                change_submits=True, do_not_clear=True, enable_events=True,
+                                default_text=''),
+                          sg.T('', key='error_zipcode', text_color='purple', size=(36,2))]]
     else:
         frame_zipcode = [[sg.Radio('15212', 'zipcode', key='zipcode_15212'),
                           sg.Radio('Other', 'zipcode', key='zipcode_other',
@@ -577,25 +602,28 @@ def text_new_alumni_p2(alumni):
             break
         if event == 'next_page':
 #Birthday field must be empty or mm-dd-yyyy
-            if (len(values['bday_month']) !=2 or
-                  len(values['bday_day']) !=2 or
-                  len(values['bday_year']) !=4):
+            print('month:', len(values['bday_month']))
+            print('Zip other:', len(values['zipcode_input']))
+            if  (len(values['bday_month']) not in [0,2] or
+                 len(values['bday_day']) not in [0,2] or
+                 len(values['bday_year']) not in [0,4]):
                     window['main_error'].Update('Please complete the Birthday')
                     window['main_error'].Widget.config(background='red')
 #Gender field must have 1 option selected
             elif sum([values['gender_male'], values['gender_female']]) == 0:
                     window['main_error'].Update('Please select a Gender')
                     window['main_error'].Widget.config(background='red')
-#Zipcode must be a 5-digit number
-            elif values['zipcode_other'] == True and len(values['zipcode_input']) != 5:
+#Zipcode must be a 5-digit number or 0-digit
+            elif values['zipcode_other'] == True and len(values['zipcode_input']) not in [0,5]:
                 window['main_error'].Update('Please input a 5-digit Zipcode')
                 window['main_error'].Widget.config(background='red')
+                
 #All conditions met, break, move to next page
-            elif ((len(values['zipcode_input']) == 5 or values['zipcode_15212'] == True) and
+            elif ((len(values['zipcode_input']) in [0,5] or values['zipcode_15212'] == True) and
                   sum([values['gender_male'], values['gender_female']]) != 0 and
-                (len(values['bday_month']) ==2 or
-                 len(values['bday_day']) ==2 or
-                 len(values['bday_year']) ==4)):
+                (len(values['bday_month']) in [0,2] or
+                 len(values['bday_day']) in [0,2] or
+                 len(values['bday_year']) in [0,4])):
                         window['main_error'].Update('')
                         window['main_error'].Widget.config(background='#64778D')
                         break
@@ -744,6 +772,10 @@ def text_new_alumni_p4(alumni):
 
     if alumni.at[0,'parent_guardian_phone_num'] == '':
         pg_phone = ['','','']
+    elif alumni.at[0,'parent_guardian_phone_num'] == 'None':
+        pg_phone = ['','','']
+    elif alumni.at[0,'parent_guardian_phone_num'] == None:
+        pg_phone = ['','','']
     else:
         pg_phone = alumni.at[0,'parent_guardian_phone_num'].split('-')
 
@@ -769,6 +801,10 @@ def text_new_alumni_p4(alumni):
                                             enable_events=True)]]
 
     if alumni.at[0,'emergency_contact_phone_number'] == '':
+        e_phone = ['','','']
+    elif alumni.at[0,'emergency_contact_phone_number'] == 'None':
+        e_phone = ['','','']
+    elif alumni.at[0,'emergency_contact_phone_number'] == None:
         e_phone = ['','','']
     else:
         e_phone = alumni.at[0,'emergency_contact_phone_number'].split('-')

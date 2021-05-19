@@ -55,7 +55,8 @@ def new_alumni_gui(location):
         if event[0] == 'import':
             window.close()
             sg.popup_ok('This may take a few seconds.\n\nThere will be no window\n'+
-                        'while the program works.\nPlease be patient.')
+                        'while the program works.\nPlease be patient.'+
+                        '\nPress OK to begin importation.')
             import_alumni_p1(location)
 
         elif event[0] in  (sg.WIN_CLOSED, 'cancel', 'main'):
